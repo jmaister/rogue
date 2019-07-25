@@ -7,7 +7,7 @@ var Game = {
     init: function() {
         this._display = new ROT.Display({
             width: this._screenWidth,
-            height: this._screenHeight
+            height: this._screenHeight + 1
         });
 
         // Create a helper function for binding to an event
@@ -20,10 +20,6 @@ var Game = {
                 if (game._currentScreen !== null) {
                     // Send the event type and data to the screen
                     game._currentScreen.handleInput(event, e);
-                    // Clear the screen
-                    //game._display.clear();
-                    // Render the screen
-                    //game._currentScreen.render(game._display);
                 }
             });
         }
@@ -64,8 +60,37 @@ var Game = {
         this._display.clear();
         // Render the screen
         this._currentScreen.render(this._display);
-    }
+    },
 
+    sendMessage: function(recipient, message, args) {
+        // Make sure the recipient can receive the message 
+        // before doing any work.
+        if (recipient.hasMixin(Game.Mixins.MessageRecipient)) {
+            // If args were passed, then we format the message, else
+            // no formatting is necessary
+            if (args) {
+                message = vsprintf(message, args);
+            }
+            recipient.receiveMessage(message);
+        }
+    },
+
+    sendMessageNearby: function(map, centerX, centerY, message, args) {
+        // If args were passed, then we format the message, else
+        // no formatting is necessary
+        if (args) {
+            message = vsprintf(message, args);
+        }
+        // Get the nearby entities
+        const entities = map.getEntitiesWithinRadius(centerX, centerY, 5);
+        // Iterate through nearby entities, sending the message if
+        // they can receive it.
+        for (var i = 0; i < entities.length; i++) {
+            if (entities[i].hasMixin(Game.Mixins.MessageRecipient)) {
+                entities[i].receiveMessage(message);
+            }
+        }
+    }    
 }
 
 window.onload = function() {
