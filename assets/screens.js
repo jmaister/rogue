@@ -44,11 +44,11 @@ Game.Screen.playScreen = {
         var screenWidth = Game.getScreenWidth();
         var screenHeight = Game.getScreenHeight();
         // Make sure the x-axis doesn't go to the left of the left bound
-        var topLeftX = Math.max(0, this._centerX - (screenWidth / 2));
+        var topLeftX = Math.max(0, this._player.getX() - (screenWidth / 2));
         // Make sure we still have enough space to fit an entire game screen
         topLeftX = Math.min(topLeftX, this._map.getWidth() - screenWidth);
         // Make sure the y-axis doesn't above the top bound
-        var topLeftY = Math.max(0, this._centerY - (screenHeight / 2));
+        var topLeftY = Math.max(0, this._player.getY() - (screenHeight / 2));
         // Make sure we still have enough space to fit an entire game screen
         topLeftY = Math.min(topLeftY, this._map.getHeight() - screenHeight);
         // Iterate through all visible map cells
@@ -56,16 +56,15 @@ Game.Screen.playScreen = {
             for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
                 // Fetch the glyph for the tile and render it to the screen
                 // at the offset position.
-                var glyph = this._map.getTile(x, y, this._player.getZ());
+                var tile = this._map.getTile(x, y, this._player.getZ());
                 display.draw(
                     x - topLeftX,
                     y - topLeftY,
-                    glyph.getChar(), 
-                    glyph.getForeground(), 
-                    glyph.getBackground());
+                    tile.getChar(), 
+                    tile.getForeground(), 
+                    tile.getBackground())
             }
         }
-
         // Render the entities
         var entities = this._map.getEntities();
         for (var i = 0; i < entities.length; i++) {
@@ -84,7 +83,6 @@ Game.Screen.playScreen = {
                 );
             }
         }
-
         // Get the messages in the player's queue and render them
         var messages = this._player.getMessages();
         var messageY = 0;
