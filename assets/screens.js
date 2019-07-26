@@ -28,37 +28,14 @@ Game.Screen.playScreen = {
     enter: function() {  
         var map = [];
         // Create a map based on our size parameters
-        var mapWidth = 100;
-        var mapHeight = 48;
-        for (var x = 0; x < mapWidth; x++) {
-            // Create the nested array for the y values
-            map.push([]);
-            // Add all the tiles
-            for (var y = 0; y < mapHeight; y++) {
-                map[x].push(Tile.nullTile);
-            }
-        }
-        // Setup the map generator
-        var generator = new ROT.Map.Cellular(mapWidth, mapHeight);
-        generator.randomize(0.5);
-        var totalIterations = 3;
-        // Iteratively smoothen the map
-        for (var i = 0; i < totalIterations - 1; i++) {
-            generator.create();
-        }
-        // Smoothen it one last time and then update our map
-        generator.create(function(x,y,v) {
-            if (v === 1) {
-                map[x][y] = Tile.floorTile;
-            } else {
-                map[x][y] = Tile.wallTile;
-            }
-        });
-        // Create our map from the tiles and player
-        this._player = new Entity(Game.PlayerTemplate);        
-        // Create our map from the tiles
-        this._map = new Map(map, this._player);
+        var width = 100;
+        var height = 48;
+        var depth = 6;
 
+        // Create our map from the tiles and player
+        var tiles = new Builder(width, height, depth).getTiles();
+        this._player = new Entity(Game.PlayerTemplate);
+        this._map = new Map(tiles, this._player);
         // Start the map's engine
         this._map.getEngine().start();
     },
@@ -79,7 +56,7 @@ Game.Screen.playScreen = {
             for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
                 // Fetch the glyph for the tile and render it to the screen
                 // at the offset position.
-                var glyph = this._map.getTile(x, y);//.getGlyph();
+                var glyph = this._map.getTile(x, y, this._player.getZ());
                 display.draw(
                     x - topLeftX,
                     y - topLeftY,
@@ -96,7 +73,8 @@ Game.Screen.playScreen = {
             // Only render the entitiy if they would show up on the screen
             if (entity.getX() >= topLeftX && entity.getY() >= topLeftY &&
                 entity.getX() < topLeftX + screenWidth &&
-                entity.getY() < topLeftY + screenHeight) {
+                entity.getY() < topLeftY + screenHeight &&
+                entity.getZ() == this._player.getZ()) {
                 display.draw(
                     entity.getX() - topLeftX, 
                     entity.getY() - topLeftY,    
@@ -134,24 +112,40 @@ Game.Screen.playScreen = {
             } else {
                 // Movement
                 if (inputData.keyCode === ROT.KEYS.VK_LEFT) {
-                    this.move(-1, 0);
+                    this.move(-1, 0, 0);
                 } else if (inputData.keyCode === ROT.KEYS.VK_RIGHT) {
-                    this.move(1, 0);
+                    this.move(1, 0, 0);
                 } else if (inputData.keyCode === ROT.KEYS.VK_UP) {
-                    this.move(0, -1);
+                    this.move(0, -1, 0);
                 } else if (inputData.keyCode === ROT.KEYS.VK_DOWN) {
-                    this.move(0, 1);
+                    this.move(0, 1, 0);
+                } else {
+                    // Not a valid key
+                    return;
                 }
                 // Unlock the engine
                 this._map.getEngine().unlock();
             }
+        } else if (inputType === 'keypress') {
+            var keyChar = String.fromCharCode(inputData.charCode);
+            if (keyChar === '>') {
+                this.move(0, 0, 1);
+            } else if (keyChar === '<') {
+                this.move(0, 0, -1);
+            } else {
+                // Not a valid key
+                return;
+            }
+            // Unlock the engine
+            this._map.getEngine().unlock();
         } 
     },
-    move: function(dX, dY) {
+    move: function(dX, dY, dZ) {
         var newX = this._player.getX() + dX;
         var newY = this._player.getY() + dY;
+        var newZ = this._player.getZ() + dZ;
         // Try to move to the new cell
-        this._player.tryMove(newX, newY, this._map);
+        this._player.tryMove(newX, newY, newZ, this._map);
     }    
 }
 

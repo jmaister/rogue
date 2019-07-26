@@ -26,7 +26,7 @@ var Game = {
         // Bind keyboard input events
         bindEventToScreen('keydown');
         //bindEventToScreen('keyup');
-        //bindEventToScreen('keypress');        
+        bindEventToScreen('keypress');    
     },
 
     getDisplay() {
@@ -60,38 +60,62 @@ var Game = {
         this._display.clear();
         // Render the screen
         this._currentScreen.render(this._display);
-    },
+    }
 
-    sendMessage: function(recipient, message, args) {
-        // Make sure the recipient can receive the message 
-        // before doing any work.
-        if (recipient.hasMixin(Game.Mixins.MessageRecipient)) {
-            // If args were passed, then we format the message, else
-            // no formatting is necessary
-            if (args) {
-                message = vsprintf(message, args);
-            }
-            recipient.receiveMessage(message);
-        }
-    },
+}
 
-    sendMessageNearby: function(map, centerX, centerY, message, args) {
+Game.sendMessage = function(recipient, message, args) {
+    // Make sure the recipient can receive the message 
+    // before doing any work.
+    if (recipient.hasMixin(Game.Mixins.MessageRecipient)) {
         // If args were passed, then we format the message, else
         // no formatting is necessary
         if (args) {
             message = vsprintf(message, args);
         }
-        // Get the nearby entities
-        const entities = map.getEntitiesWithinRadius(centerX, centerY, 5);
-        // Iterate through nearby entities, sending the message if
-        // they can receive it.
-        for (var i = 0; i < entities.length; i++) {
-            if (entities[i].hasMixin(Game.Mixins.MessageRecipient)) {
-                entities[i].receiveMessage(message);
-            }
-        }
-    }    
+        recipient.receiveMessage(message);
+    }
 }
+
+Game.sendMessageNearby = function(map, centerX, centerY, centerZ, message, args) {
+    // If args were passed, then we format the message, else
+    // no formatting is necessary
+    if (args) {
+        message = vsprintf(message, args);
+    }
+    // Get the nearby entities
+    const entities = map.getEntitiesWithinRadius(centerX, centerY, centerZ, 5);
+    // Iterate through nearby entities, sending the message if
+    // they can receive it.
+    for (var i = 0; i < entities.length; i++) {
+        if (entities[i].hasMixin(Game.Mixins.MessageRecipient)) {
+            entities[i].receiveMessage(message);
+        }
+    }
+}
+
+Game.getNeighborPositions = function(x, y) {
+    var tiles = [];
+    // Generate all possible offsets
+    for (var dX = -1; dX < 2; dX ++) {
+        for (var dY = -1; dY < 2; dY++) {
+            // Make sure it isn't the same tile
+            if (dX == 0 && dY == 0) {
+                continue;
+            }
+            tiles.push({x: x + dX, y: y + dY});
+        }
+    }
+    return tiles.randomize();
+}
+
+Array.prototype.randomize = function randomize() {
+    for (let i = this.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this[i], this[j]] = [this[j], this[i]];
+    }
+    return this;
+};
 
 window.onload = function() {
     // Initialize the game
@@ -101,3 +125,5 @@ window.onload = function() {
     // Load the start screen
     Game.switchScreen(Game.Screen.startScreen);
 }
+
+

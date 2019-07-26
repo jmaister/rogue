@@ -1,15 +1,14 @@
 
 class Entity extends Glyph {
 
-    constructor(properties) {
-        properties = properties || {};
-        super(properties);
+    constructor(properties={}) {
         // Call the glyph's construtor with our set of properties
-        // Game.Glyph.call(this, properties);
+        super(properties);
         // Instantiate any properties from the passed object
         this._name = properties['name'] || '';
         this._x = properties['x'] || 0;
         this._y = properties['y'] || 0;
+        this._z = properties['z'] || 0;
         this._map = null;
 
         // Create an object which will keep track what mixins we have
@@ -74,5 +73,17 @@ class Entity extends Glyph {
     }
     getMap() {
         return this._map;
+    }
+    setZ(z) {
+        this._z = z;
+    }
+    getZ() {
+        return this._z;
+    }
+
+    setPosition(x, y, z) {
+        this._x = x;
+        this._y = y;
+        this._z = z;
     }
 }

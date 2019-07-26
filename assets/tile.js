@@ -1,10 +1,8 @@
 
 class Tile extends Glyph {
-    constructor(properties) {
-        properties = properties || {};
-        super(properties);
+    constructor(properties={}) {
         // Call the Glyph constructor with our properties
-        //Glyph.call(this, properties);
+        super(properties);
         // Set up the properties. We use false by default.
         this._isWalkable = properties['isWalkable'] || false;
         this._isDiggable = properties['isDiggable'] || false;
@@ -28,4 +26,14 @@ Tile.wallTile = new Tile({
     character: '#',
     foreground: 'goldenrod',
     isDiggable: true
+});
+Tile.stairsUpTile = new Tile({
+    character: '<',
+    foreground: 'white',
+    isWalkable: true
+});
+Tile.stairsDownTile = new Tile({
+    character: '>',
+    foreground: 'white',
+    isWalkable: true
 });
