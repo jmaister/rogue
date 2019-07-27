@@ -117,6 +117,11 @@ Array.prototype.randomize = function randomize() {
     return this;
 };
 
+Array.prototype.random = function random() {
+    const i = Math.floor(Math.random() * this.length);
+    return this[i];
+};
+
 window.onload = function() {
     // Initialize the game
     Game.init();

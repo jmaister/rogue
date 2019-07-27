@@ -27,3 +27,9 @@ http://rogueliketutorials.com/tutorials/tcod/
 
 
 http://www.roguebasin.com/index.php?title=Rot.js_tutorial
+
+# Inspiration
+
+The Royal Wedding http://ondras.github.io/trw/
+https://github.com/ondras/trw/
+

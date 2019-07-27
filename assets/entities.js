@@ -184,19 +184,17 @@ Game.PlayerTemplate = {
     ]
 }
 
-// Fungus template
-Game.FungusTemplate = {
+Game.EntityRepository = new Repository('entities', Entity);
+
+Game.EntityRepository.define('fungus', {
     name: 'fungus',
     character: 'F',
     foreground: 'green',
     maxHp: 10,
-    mixins: [
-        Game.Mixins.FungusActor,
-        Game.Mixins.Destructible
-    ]
-}
+    mixins: [Game.Mixins.FungusActor, Game.Mixins.Destructible]
+});
 
-Game.BatTemplate = {
+Game.EntityRepository.define('bat', {
     name: 'bat',
     character: 'B',
     foreground: 'white',
@@ -204,9 +202,9 @@ Game.BatTemplate = {
     attackValue: 4,
     mixins: [Game.Mixins.WanderActor, 
              Game.Mixins.Attacker, Game.Mixins.Destructible]
-};
+});
 
-Game.NewtTemplate = {
+Game.EntityRepository.define('newt', {
     name: 'newt',
     character: ':',
     foreground: 'yellow',
@@ -214,4 +212,4 @@ Game.NewtTemplate = {
     attackValue: 2,
     mixins: [Game.Mixins.WanderActor, 
              Game.Mixins.Attacker, Game.Mixins.Destructible]
-};
+});
