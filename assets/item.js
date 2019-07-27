@@ -1,5 +1,5 @@
 
-class Item extends Glyph {
+class Item extends DynamicGlyph {
     
     constructor(properties={}) {
         // Call the glyph's construtor with our set of properties

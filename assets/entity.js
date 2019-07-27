@@ -1,5 +1,5 @@
 
-class Entity extends Glyph {
+class Entity extends DynamicGlyph {
 
     constructor(properties={}) {
         // Call the glyph's construtor with our set of properties
@@ -10,6 +10,7 @@ class Entity extends Glyph {
         this._y = properties['y'] || 0;
         this._z = properties['z'] || 0;
         this._map = null;
+        this._alive = true;
 
         // Create an object which will keep track what mixins we have
         // attached to this entity based on the name property
@@ -41,18 +42,6 @@ class Entity extends Glyph {
         }
     }
 
-    hasMixin(obj) {
-        // Allow passing the mixin itself or the name / group name as a string
-        if (typeof obj === 'object') {
-            return this._attachedMixins[obj.name];
-        } else {
-            return this._attachedMixins[obj] || this._attachedMixinGroups[obj];
-        }
-    }
-
-    setName(name) {
-        this._name = name;
-    }
     setX(x) {
         this._x = x;
     }
@@ -61,9 +50,6 @@ class Entity extends Glyph {
     }
     setMap(map) {
         this._map = map;
-    }
-    getName() {
-        return this._name;
     }
     getX() {
         return this._x;
@@ -79,6 +65,9 @@ class Entity extends Glyph {
     }
     getZ() {
         return this._z;
+    }
+    isAlive() {
+        return this._alive;
     }
 
     setPosition(x, y, z) {
@@ -120,8 +109,8 @@ class Entity extends Glyph {
             // An entity can only attack if the entity has the Attacker mixin and 
             // either the entity or the target is the player.
             if (this.hasMixin('Attacker') && 
-                (this.hasMixin(Game.Mixins.PlayerActor) ||
-                target.hasMixin(Game.Mixins.PlayerActor))) {
+                (this.hasMixin(Game.EntityMixins.PlayerActor) ||
+                target.hasMixin(Game.EntityMixins.PlayerActor))) {
                 this.attack(target);
                 return true;
             } 
@@ -147,7 +136,7 @@ class Entity extends Glyph {
         // if so try to dig it
         } else if (tile.isDiggable()) {
             // Only dig if the the entity is the player
-            if (this.hasMixin(Game.Mixins.PlayerActor)) {
+            if (this.hasMixin(Game.EntityMixins.PlayerActor)) {
                 map.dig(x, y, z);
                 return true;
             }
@@ -156,5 +145,25 @@ class Entity extends Glyph {
             return false;
         }
         return false;
-    }    
+    }
+
+    kill(message) {
+        // Only kill once!
+        if (!this._alive) {
+            return;
+        }
+        this._alive = false;
+        if (message) {
+            Game.sendMessage(this, message);
+        } else {
+            Game.sendMessage(this, "You have died!");
+        }
+    
+        // Check if the player died, and if so call their act method to prompt the user.
+        if (this.hasMixin(Game.EntityMixins.PlayerActor)) {
+            this.act();
+        } else {
+            this.getMap().removeEntity(this);
+        }
+    }
 }

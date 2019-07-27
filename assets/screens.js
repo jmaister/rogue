@@ -149,6 +149,10 @@ Game.Screen.playScreen = {
         var stats = '%c{white}%b{black}';
         stats += vsprintf('HP: %d/%d ', [this._player.getHp(), this._player.getMaxHp()]);
         display.drawText(0, screenHeight, stats);
+
+        // Render hunger state
+        var hungerState = this._player.getHungerState();
+        display.drawText(screenWidth - hungerState.length, screenHeight, hungerState);
     },
     handleInput: function(inputType, inputData) {
         // If the game is over, enter will bring the user to the losing screen.
@@ -201,6 +205,15 @@ Game.Screen.playScreen = {
                         // Show the drop screen
                         Game.Screen.dropScreen.setup(this._player, this._player.getItems());
                         this.setSubScreen(Game.Screen.dropScreen);
+                    }
+                    return;
+                } else if (inputData.keyCode === ROT.KEYS.VK_E) {
+                    // Show the eat screen
+                    if (Game.Screen.eatScreen.setup(this._player, this._player.getItems())) {
+                        this.setSubScreen(Game.Screen.eatScreen);
+                    } else {
+                        Game.sendMessage(this._player, "You have nothing to eat!");
+                        Game.refresh();
                     }
                     return;
                 } else if (inputData.keyCode === ROT.KEYS.VK_COMMA) {
@@ -301,6 +314,10 @@ Game.Screen.ItemListScreen = function(template) {
     // Set up based on the template
     this._caption = template['caption'];
     this._okFunction = template['ok'];
+    // By default, we use the identity function
+    this._isAcceptableFunction = template['isAcceptable'] || function(x) {
+        return x;
+    }
     // Whether the user can select items at all.
     this._canSelectItem = template['canSelect'];
     // Whether the user can select multiple items.
@@ -310,9 +327,22 @@ Game.Screen.ItemListScreen = function(template) {
 Game.Screen.ItemListScreen.prototype.setup = function(player, items) {
     this._player = player;
     // Should be called before switching to the screen.
-    this._items = items;
+    var count = 0;
+    // Iterate over each item, keeping only the aceptable ones and counting
+    // the number of acceptable items.
+    var that = this;
+    this._items = items.map(function(item) {
+        // Transform the item into null if it's not acceptable
+        if (that._isAcceptableFunction(item)) {
+            count++;
+            return item;
+        } else {
+            return null;
+        }
+    });
     // Clean set of selected indices
     this._selectedIndices = {};
+    return count;
 };
 
 Game.Screen.ItemListScreen.prototype.render = function(display) {
@@ -412,6 +442,26 @@ Game.Screen.dropScreen = new Game.Screen.ItemListScreen({
     ok: function(selectedItems) {
         // Drop the selected item
         this._player.dropItem(Object.keys(selectedItems)[0]);
+        return true;
+    }
+});
+
+Game.Screen.eatScreen = new Game.Screen.ItemListScreen({
+    caption: 'Choose the item you wish to eat',
+    canSelect: true,
+    canSelectMultipleItems: false,
+    isAcceptable: function(item) {
+        return item && item.hasMixin('Edible');
+    },
+    ok: function(selectedItems) {
+        // Eat the item, removing it if there are no consumptions remaining.
+        var key = Object.keys(selectedItems)[0];
+        var item = selectedItems[key];
+        Game.sendMessage(this._player, "You eat %s.", [item.describeThe()]);
+        item.eat(this._player);
+        if (!item.hasRemainingConsumptions()) {
+            this._player.removeItem(key);
+        }
         return true;
     }
 });

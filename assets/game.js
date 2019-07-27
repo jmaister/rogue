@@ -67,7 +67,7 @@ var Game = {
 Game.sendMessage = function(recipient, message, args) {
     // Make sure the recipient can receive the message 
     // before doing any work.
-    if (recipient.hasMixin(Game.Mixins.MessageRecipient)) {
+    if (recipient.hasMixin(Game.EntityMixins.MessageRecipient)) {
         // If args were passed, then we format the message, else
         // no formatting is necessary
         if (args) {
@@ -88,7 +88,7 @@ Game.sendMessageNearby = function(map, centerX, centerY, centerZ, message, args)
     // Iterate through nearby entities, sending the message if
     // they can receive it.
     for (var i = 0; i < entities.length; i++) {
-        if (entities[i].hasMixin(Game.Mixins.MessageRecipient)) {
+        if (entities[i].hasMixin(Game.EntityMixins.MessageRecipient)) {
             entities[i].receiveMessage(message);
         }
     }
