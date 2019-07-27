@@ -12,6 +12,9 @@ class Map  {
         // setup the field of visions
         this._fov = [];
         this.setupFov();
+        // Setup the explored array
+        this._explored = new Array(this._depth);
+        this._setupExploredArray();
                 
         // create a list which will hold the entities
         this._entities = [];
@@ -174,5 +177,33 @@ class Map  {
 
     getFov(depth) {
         return this._fov[depth];
-    }    
+    }
+
+    _setupExploredArray() {
+        for (var z = 0; z < this._depth; z++) {
+            this._explored[z] = new Array(this._width);
+            for (var x = 0; x < this._width; x++) {
+                this._explored[z][x] = new Array(this._height);
+                for (var y = 0; y < this._height; y++) {
+                    this._explored[z][x][y] = false;
+                }
+            }
+        }
+    }
+    setExplored(x, y, z, state) {
+        // Only update if the tile is within bounds
+        if (this.getTile(x, y, z) !== Tile.nullTile) {
+            this._explored[z][x][y] = state;
+        }
+    }
+
+    isExplored(x, y, z) {
+        // Only return the value if within bounds
+        if (this.getTile(x, y, z) !== Tile.nullTile) {
+            return this._explored[z][x][y];
+        } else {
+            return false;
+        }
+    }
+
 }
