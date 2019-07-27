@@ -16,7 +16,9 @@ Game.PlayerTemplate = {
         Game.EntityMixins.FoodConsumer,
         Game.EntityMixins.Sight,
         Game.EntityMixins.MessageRecipient,
-        Game.EntityMixins.Equipper
+        Game.EntityMixins.Equipper,
+        Game.EntityMixins.ExperienceGainer,
+        Game.EntityMixins.PlayerStatGainer
     ]
 }
 
@@ -30,7 +32,9 @@ Game.EntityRepository.define('fungus', {
     speed: 250,
     mixins: [
         Game.EntityMixins.FungusActor,
-        Game.EntityMixins.Destructible
+        Game.EntityMixins.Destructible,
+        Game.EntityMixins.ExperienceGainer,
+        Game.EntityMixins.RandomStatGainer
     ]
 });
 
@@ -45,7 +49,9 @@ Game.EntityRepository.define('bat', {
         Game.EntityMixins.TaskActor,
         Game.EntityMixins.Attacker,
         Game.EntityMixins.Destructible,
-        Game.EntityMixins.CorpseDropper
+        Game.EntityMixins.CorpseDropper,
+        Game.EntityMixins.ExperienceGainer,
+        Game.EntityMixins.RandomStatGainer
     ]
 });
 
@@ -59,7 +65,9 @@ Game.EntityRepository.define('newt', {
         Game.EntityMixins.TaskActor, 
         Game.EntityMixins.Attacker,
         Game.EntityMixins.Destructible,
-        Game.EntityMixins.CorpseDropper
+        Game.EntityMixins.CorpseDropper,
+        Game.EntityMixins.ExperienceGainer,
+        Game.EntityMixins.RandomStatGainer
     ]
 });
 
@@ -77,7 +85,9 @@ Game.EntityRepository.define('kobold', {
         Game.EntityMixins.Sight,
         Game.EntityMixins.Attacker,
         Game.EntityMixins.Destructible,
-        Game.EntityMixins.CorpseDropper
+        Game.EntityMixins.CorpseDropper,
+        Game.EntityMixins.ExperienceGainer,
+        Game.EntityMixins.RandomStatGainer
     ]
 });
 

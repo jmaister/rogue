@@ -32,10 +32,18 @@ class Map  {
         for (var z = 0; z < this._depth; z++) {
             // 15 entities per floor
             for (var i = 0; i < 15; i++) {
+                var entity = Game.EntityRepository.createRandom();
                 // Add a random entity
-                this.addEntityAtRandomPosition(Game.EntityRepository.createRandom(), z);
+                this.addEntityAtRandomPosition(entity, z);
+                // Level up the entity based on the floor
+                if (entity.hasMixin('ExperienceGainer')) {
+                    for (var level = 0; level < z; level++) {
+                        entity.giveExperience(entity.getNextLevelExperience() -
+                            entity.getExperience());
+                    }
+                }
             }
-            // 10 items per floor
+            // 15 items per floor
             for (var i = 0; i < 15; i++) {
                 // Add a random entity
                 this.addItemAtRandomPosition(Game.ItemRepository.createRandom(), z);
