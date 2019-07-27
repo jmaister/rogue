@@ -33,3 +33,8 @@ http://www.roguebasin.com/index.php?title=Rot.js_tutorial
 The Royal Wedding http://ondras.github.io/trw/
 https://github.com/ondras/trw/
 
+A web-based roguelike written in Dart. http://munificent.github.io/hauberk/
+https://github.com/munificent/hauberk
+
+A JavaScript character-based tile engine for creating games such as roguelikes. http://tapio.github.com/unicodetiles.js/
+https://github.com/tapio/unicodetiles.js
