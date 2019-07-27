@@ -21,11 +21,13 @@ class Map  {
         // Create a table which will hold the items
         this._items = {};        
         // create the engine and scheduler
-        this._scheduler = new ROT.Scheduler.Simple();
+        this._scheduler = new ROT.Scheduler.Speed();
         this._engine = new ROT.Engine(this._scheduler);
 
-        // add the player
+        // Add the player
+        this._player = player;
         this.addEntityAtRandomPosition(player, 0);
+
         // Add random entities and items to each floor.
         for (var z = 0; z < this._depth; z++) {
             // 15 entities per floor
@@ -61,6 +63,10 @@ class Map  {
     getHeight() {
         return this._height;
     }
+    getPlayer() {
+        return this._player;
+    }
+
     // Gets the tile for a given coordinate set
     getTile(x, y, z) {
         // Make sure we are inside the bounds. If we aren't, return

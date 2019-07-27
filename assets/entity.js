@@ -11,6 +11,8 @@ class Entity extends DynamicGlyph {
         this._z = properties['z'] || 0;
         this._map = null;
         this._alive = true;
+        // Acting speed
+        this._speed = properties['speed'] || 1000;        
 
         // Create an object which will keep track what mixins we have
         // attached to this entity based on the name property
@@ -68,6 +70,12 @@ class Entity extends DynamicGlyph {
     }
     isAlive() {
         return this._alive;
+    }
+    setSpeed(speed) {
+        this._speed = speed;
+    }
+    getSpeed() {
+        return this._speed;
     }
 
     setPosition(x, y, z) {
