@@ -67,24 +67,6 @@ Game.Screen.playScreen = {
                 map.setExplored(x, y, currentDepth, true);
             });
         
-        /*
-        // Iterate through all visible map cells
-        for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
-            for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
-                if (visibleCells[x + ',' + y]) {
-                    // Fetch the glyph for the tile and render it to the screen
-                    // at the offset position.
-                    var tile = this._map.getTile(x, y, this._player.getZ());
-                    display.draw(
-                        x - topLeftX,
-                        y - topLeftY,
-                        tile.getChar(), 
-                        tile.getForeground(), 
-                        tile.getBackground());
-                }
-            }
-        }
-        */
         // Render the explored map cells
         for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
             for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
@@ -108,8 +90,8 @@ Game.Screen.playScreen = {
 
         // Render the entities
         var entities = this._map.getEntities();
-        for (var i = 0; i < entities.length; i++) {
-            var entity = entities[i];
+        for (var key in entities) {
+            var entity = entities[key];
             // Only render the entitiy if they would show up on the screen
             if (entity.getX() >= topLeftX && entity.getY() >= topLeftY &&
                 entity.getX() < topLeftX + screenWidth &&
@@ -143,6 +125,14 @@ Game.Screen.playScreen = {
         display.drawText(0, screenHeight, stats);
     },
     handleInput: function(inputType, inputData) {
+        // If the game is over, enter will bring the user to the losing screen.
+        if (this._gameEnded) {
+            if (inputType === 'keydown' && inputData.keyCode === ROT.VK_RETURN) {
+                Game.switchScreen(Game.Screen.loseScreen);
+            }
+            // Return to make sure the user can't still play
+            return;
+        }
         if (inputType === 'keydown') {
             // If enter is pressed, go to the win screen
             // If escape is pressed, go to lose screen
@@ -187,6 +177,10 @@ Game.Screen.playScreen = {
         var newZ = this._player.getZ() + dZ;
         // Try to move to the new cell
         this._player.tryMove(newX, newY, newZ, this._map);
+    },
+    
+    setGameEnded: function(gameEnded) {
+        this._gameEnded = gameEnded;
     }    
 }
 
