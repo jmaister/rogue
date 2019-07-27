@@ -15,7 +15,8 @@ Game.PlayerTemplate = {
         Game.EntityMixins.InventoryHolder,
         Game.EntityMixins.FoodConsumer,
         Game.EntityMixins.Sight,
-        Game.EntityMixins.MessageRecipient
+        Game.EntityMixins.MessageRecipient,
+        Game.EntityMixins.Equipper
     ]
 }
 
