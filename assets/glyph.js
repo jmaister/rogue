@@ -18,4 +18,8 @@ class Glyph {
         return this._foreground; 
     }
 
+    getRepresentation() {
+        return '%c{' + this._foreground + '}%b{' + this._background + '}' + this._char +
+            '%c{white}%b{black}';
+    }
 }

@@ -8,6 +8,7 @@ class Tile extends Glyph {
         this._isDiggable = properties['isDiggable'] || false;
         this._blocksLight = (properties['blocksLight'] !== undefined) ?
             properties['blocksLight'] : true;
+        this._description = properties['description'] || '';
     }
 
     isWalkable() {
@@ -20,42 +21,52 @@ class Tile extends Glyph {
 
     isBlockingLight() {
         return this._blocksLight;
+    }
+    
+    getDescription() {
+        return this._description;
     }    
 }
 
-Tile.nullTile = new Tile({});
+Tile.nullTile = new Tile({description: '(unknown)'});
 Tile.floorTile = new Tile({
     character: '.',
     isWalkable: true,
-    blocksLight: false
+    blocksLight: false,
+    description: 'A cave floor'
 });
 Tile.wallTile = new Tile({
     character: '#',
     foreground: 'goldenrod',
     isDiggable: true,
-    diggable: true
+    diggable: true,
+    description: 'A cave wall'
 });
 Tile.stairsUpTile = new Tile({
     character: '<',
     foreground: 'white',
     isWalkable: true,
-    blocksLight: false
+    blocksLight: false,
+    description: 'A rock staircase leading upwards'
 });
 Tile.stairsDownTile = new Tile({
     character: '>',
     foreground: 'white',
     isWalkable: true,
-    blocksLight: false
+    blocksLight: false,
+    description: 'A rock staircase leading downwards'
 });
 Tile.holeToCavernTile = new Tile({
     character: 'O',
     foreground: 'white',
     isWalkable: true,
-    blocksLight: false
+    blocksLight: false,
+    description: 'A great dark hole in the ground'
 });
 Tile.waterTile = new Tile({
     character: '~',
     foreground: 'blue',
     isWalkable: false,
-    blocksLight: false
+    blocksLight: false,
+    description: 'Murky blue water'
 });

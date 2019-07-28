@@ -65,6 +65,12 @@ Game.EntityMixins.Destructible = {
         onGainLevel: function() {
             // Heal the entity.
             this.setHp(this.getMaxHp());
+        },
+        details: function() {
+            return [
+                {key: 'defense', value: this.getDefenseValue()},
+                {key: 'hp', value: this.getHp()}
+            ];
         }
     }
 }
@@ -111,6 +117,11 @@ Game.EntityMixins.Attacker = {
                 [this.getName(), damage]);
 
             target.takeDamage(this, damage);
+        }
+    },
+    listeners: {
+        details: function() {
+            return [{key: 'attack', value: this.getAttackValue()}];
         }
     }
 }
@@ -571,6 +582,9 @@ Game.EntityMixins.ExperienceGainer = {
             if (exp > 0) {
                 this.giveExperience(exp);
             }
+        },
+        details: function() {
+            return [{key: 'level', value: this.getLevel()}];
         }
     }
 };

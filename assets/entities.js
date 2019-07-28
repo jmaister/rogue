@@ -1,6 +1,7 @@
 
 // Player template
 Game.PlayerTemplate = {
+    name: 'human (you)',
     character: '@',
     foreground: 'white',
     background: 'black',
