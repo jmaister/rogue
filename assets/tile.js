@@ -47,3 +47,15 @@ Tile.stairsDownTile = new Tile({
     isWalkable: true,
     blocksLight: false
 });
+Tile.holeToCavernTile = new Tile({
+    character: 'O',
+    foreground: 'white',
+    isWalkable: true,
+    blocksLight: false
+});
+Tile.waterTile = new Tile({
+    character: '~',
+    foreground: 'blue',
+    isWalkable: false,
+    blocksLight: false
+});
