@@ -104,9 +104,6 @@ Array.prototype.random = function random() {
 window.onload = function() {
     // Initialize the game
     const game = new Game();
-    console.log("game created 1", game);
-    //console.log("game created 2", Game.getInstance());
-
     game.init();
     // Add the container to our HTML page
     document.body.appendChild(game.getDisplay().getContainer());

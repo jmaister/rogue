@@ -85,8 +85,7 @@ class PlayScreen extends Screen {
         // Create a map based on our size parameters
         var width = 100;
         var height = 48;
-        // TODO: change to 6
-        var depth = 1;
+        var depth = 6;
 
         // Create our map from the tiles and player
         const playerTpl = Object.assign({}, PlayerTemplate, {
@@ -98,7 +97,7 @@ class PlayScreen extends Screen {
         // Start the map's engine
         map.getEngine().start();
     }
-    exit() { console.log("Exited play screen."); }
+
     render(display) {
         // Render subscreen if there is one
         if (this.getSubScreen()) {
@@ -177,9 +176,6 @@ class PlayScreen extends Screen {
                             glyph = map.getEntityAt(x, y, currentDepth);
                         }
                         // Update the foreground color in case our glyph changed
-                        if (glyph === undefined) {
-                            console.log("err", items);
-                        }
                         foreground = glyph.getForeground();
                     } else {
                         // Since the tile was previously explored but is not 

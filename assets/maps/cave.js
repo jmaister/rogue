@@ -12,8 +12,8 @@ class Cave extends Map {
         this.addEntityAtRandomPosition(player, 0);
         // Add random entities and items to each floor.
         for (var z = 0; z < this._depth; z++) {
-            // 15 entities per floor
-            for (var i = 0; i < 15; i++) {
+            // 25 entities per floor
+            for (var i = 0; i < 25; i++) {
                 var entity = game.getEntityRepository().createRandom();
                 // Add a random entity
                 this.addEntityAtRandomPosition(entity, z);
@@ -40,9 +40,7 @@ class Cave extends Map {
         }
         // Add a hole to the final cavern on the last level.
         var holePosition = this.getRandomFloorPosition(this._depth - 1);
-        // TODO: remove hack
-        // this._tiles[this._depth - 1][holePosition.x][holePosition.y] = Tile.holeToCavernTile;
-        this._tiles[this._depth - 1][5][5] = Tile.holeToCavernTile;
+        this._tiles[this._depth - 1][holePosition.x][holePosition.y] = Tile.holeToCavernTile;
     }
 }
 
