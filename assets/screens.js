@@ -16,6 +16,7 @@ class Screen {
     constructor(name, game) {
         this._name = name;
         this._game = game;
+        this._subScreen = null;
     }
 
     getGame() {
@@ -37,6 +38,17 @@ class Screen {
     handleInput(inputType, inputData) {
         console.log("Handling input [" + this.getName() + "]", inputType, inputData); 
     }
+
+    getSubScreen() {
+        return this._subScreen;
+    }
+
+    setSubScreen(subScreen) {
+        this._subScreen = subScreen;
+        // Refresh screen on changing the subscreen
+        this.getGame().refresh();
+    }
+
 }
 
 class StartScreen extends Screen {
@@ -67,8 +79,6 @@ class PlayScreen extends Screen {
         super("Play screen", game);
         this._player = null;
         this._gameEnded = false;
-        this._subScreen = null;
-    
     }
     enter() {  
         var map = [];
@@ -91,8 +101,8 @@ class PlayScreen extends Screen {
     exit() { console.log("Exited play screen."); }
     render(display) {
         // Render subscreen if there is one
-        if (this._subScreen) {
-            this._subScreen.render(display);
+        if (this.getSubScreen()) {
+            this.getSubScreen().render(display);
             return;
         }
         var screenWidth = this.getGame().getScreenWidth();
@@ -215,8 +225,8 @@ class PlayScreen extends Screen {
             return;
         }
         // Handle subscreen input if there is one
-        if (this._subScreen) {
-            this._subScreen.handleInput(inputType, inputData);
+        if (this.getSubScreen()) {
+            this.getSubScreen().handleInput(inputType, inputData);
             return;
         }
         if (inputType === 'keydown') {
@@ -342,12 +352,6 @@ class PlayScreen extends Screen {
         this._gameEnded = gameEnded;
     }
     
-    setSubScreen(subScreen) {
-        this._subScreen = subScreen;
-        // Refresh screen on changing the subscreen
-        this.getGame().refresh();
-    }
-
     showItemsSubScreen(subScreen, items, emptyMessage) {
         if (items && subScreen.setup(this._game, this._player, items) > 0) {
             this.setSubScreen(subScreen);
