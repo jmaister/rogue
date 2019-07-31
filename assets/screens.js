@@ -60,7 +60,14 @@ class StartScreen extends Screen {
     render(display) {
         // Render our prompt to the screen
         display.drawText(1,1, "%c{yellow}Javascript Roguelike");
-        display.drawText(1,2, "Press [Enter] to start!");
+
+        display.drawText(1,3, "%c{white}You have been hired by the peasants of the town because there is a %c{teal}giant zombie%c{white}"
+                + " messing with them.", 60);
+        display.drawText(1,6, "%c{white}You are a hero in the middle of a cavern.");
+        display.drawText(1,7, "%c{white}Some explorers found that the cavern has 5 levels, then you can find the 'O' where the zombie is living.", 60);
+
+        display.drawText(1,11, "%c{white}KILL IT !!!");
+        display.drawText(1,20, "Press [Enter] to start!");
     }
     handleInput(inputType, inputData) {
         // When [Enter] is pressed, go to the play screen
@@ -85,7 +92,7 @@ class PlayScreen extends Screen {
         // Create a map based on our size parameters
         var width = 100;
         var height = 48;
-        var depth = 6;
+        var depth = 5;
 
         // Create our map from the tiles and player
         const playerTpl = Object.assign({}, PlayerTemplate, {
