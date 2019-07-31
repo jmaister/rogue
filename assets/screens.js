@@ -9,10 +9,7 @@ import Builder from './builder';
 import Cave from './maps/cave';
 import {PlayerTemplate} from './entities';
 
-// TODO: remove hack
-var Game = {
-    Screen: {}
-};
+const GameScreens = {};
 
 class Screen {
 
@@ -78,7 +75,8 @@ class PlayScreen extends Screen {
         // Create a map based on our size parameters
         var width = 100;
         var height = 48;
-        var depth = 6;
+        // TODO: change to 6
+        var depth = 1;
 
         // Create our map from the tiles and player
         const playerTpl = Object.assign({}, PlayerTemplate, {
@@ -206,7 +204,7 @@ class PlayScreen extends Screen {
             y: topLeftY
         };
     }
-    
+
     handleInput(inputType, inputData) {
         // If the game is over, enter will bring the user to the losing screen.
         if (this._gameEnded) {
@@ -242,47 +240,47 @@ class PlayScreen extends Screen {
                     if (this._player.getItems().filter(function(x){return x;}).length === 0) {
                         // If the player has no items, send a message and don't take a turn
                         Utilities.sendMessage(this._player, "You are not carrying anything!");
-                        Game.refresh();
+                        this.getGame().refresh();
                     } else {
                         // Show the inventory
-                        Game.Screen.inventoryScreen.setup(this._player, this._player.getItems());
-                        this.setSubScreen(Game.Screen.inventoryScreen);
+                        GameScreens.inventoryScreen.setup(this._game, this._player, this._player.getItems());
+                        this.setSubScreen(GameScreens.inventoryScreen);
                     }
                     return;
                 } else if (inputData.keyCode === KEYS.VK_D) {
                     if (this._player.getItems().filter(function(x){return x;}).length === 0) {
                         // If the player has no items, send a message and don't take a turn
                         Utilities.sendMessage(this._player, "You have nothing to drop!");
-                        Game.refresh();
+                        this.getGame().refresh();
                     } else {
                         // Show the drop screen
-                        Game.Screen.dropScreen.setup(this._player, this._player.getItems());
-                        this.setSubScreen(Game.Screen.dropScreen);
+                        GameScreens.dropScreen.setup(this._game, this._player, this._player.getItems());
+                        this.setSubScreen(GameScreens.dropScreen);
                     }
                     return;
                 } else if (inputData.keyCode === KEYS.VK_E) {
                     // Show the eat screen
-                    if (Game.Screen.eatScreen.setup(this._player, this._player.getItems())) {
-                        this.setSubScreen(Game.Screen.eatScreen);
+                    if (GameScreens.eatScreen.setup(this._game, this._player, this._player.getItems())) {
+                        this.setSubScreen(GameScreens.eatScreen);
                     } else {
                         Utilities.sendMessage(this._player, "You have nothing to eat!");
-                        Game.refresh();
+                        this.getGame().refresh();
                     }
                     return;
                 } else if (inputData.keyCode === KEYS.VK_W) {
                     if (inputData.shiftKey) {
                         // Show the wear screen
-                        this.showItemsSubScreen(Game.Screen.wearScreen, this._player.getItems(),
+                        this.showItemsSubScreen(GameScreens.wearScreen, this._player.getItems(),
                             'You have nothing to wear.');
                     } else {
                         // Show the wield screen
-                        this.showItemsSubScreen(Game.Screen.wieldScreen, this._player.getItems(),
+                        this.showItemsSubScreen(GameScreens.wieldScreen, this._player.getItems(),
                             'You have nothing to wield.');
                     }
                     return;
                 } else if (inputData.keyCode === KEYS.VK_X) {
                     // Show the drop screen
-                    this.showItemsSubScreen(Game.Screen.examineScreen, this._player.getItems(),
+                    this.showItemsSubScreen(GameScreens.examineScreen, this._player.getItems(),
                        'You have nothing to examine.');
                     return;
                 } else if (inputData.keyCode === KEYS.VK_COMMA) {
@@ -296,7 +294,7 @@ class PlayScreen extends Screen {
                             Utilities.sendMessage(this._player, "Your inventory is full! Nothing was picked up.");
                         }
                     } else {
-                        this.showItemsSubScreen(Game.Screen.pickupScreen, items,
+                        this.showItemsSubScreen(GameScreens.pickupScreen, items,
                             'There is nothing here to pick up.');
                     } 
                 } else {
@@ -315,14 +313,14 @@ class PlayScreen extends Screen {
             } else if (keyChar === ';') {
                 // Setup the look screen.
                 var offsets = this.getScreenOffsets();
-                Game.Screen.lookScreen.setup(this._player,
+                GameScreens.lookScreen.setup(this._game, this._player,
                     this._player.getX(), this._player.getY(),
                     offsets.x, offsets.y);
-                this.setSubScreen(Game.Screen.lookScreen);
+                this.setSubScreen(GameScreens.lookScreen);
                 return;
             } else if (keyChar === '?') {
                 // Setup the look screen.
-                this.setSubScreen(Game.Screen.helpScreen);
+                this.setSubScreen(GameScreens.helpScreen);
                 return;
             } else {
                 // Not a valid key
@@ -347,15 +345,15 @@ class PlayScreen extends Screen {
     setSubScreen(subScreen) {
         this._subScreen = subScreen;
         // Refresh screen on changing the subscreen
-        Game.refresh();
+        this.getGame().refresh();
     }
 
     showItemsSubScreen(subScreen, items, emptyMessage) {
-        if (items && subScreen.setup(this._player, items) > 0) {
+        if (items && subScreen.setup(this._game, this._player, items) > 0) {
             this.setSubScreen(subScreen);
         } else {
             Utilities.sendMessage(this._player, emptyMessage);
-            Game.refresh();
+            this.getGame().refresh();
         }
     }
 }
@@ -399,137 +397,144 @@ class LoseScreen extends Screen {
     }
 }
 
-// TODO: FIX !!
-Game.Screen.ItemListScreen = function(template) {
-    // Set up based on the template
-    this._caption = template['caption'];
-    this._okFunction = template['ok'];
-    // By default, we use the identity function
-    this._isAcceptableFunction = template['isAcceptable'] || function(x) {
-        return x;
-    }
-    // Whether the user can select items at all.
-    this._canSelectItem = template['canSelect'];
-    // Whether the user can select multiple items.
-    this._canSelectMultipleItems = template['canSelectMultipleItems'];
-    // Whether a 'no item' option should appear.
-    this._hasNoItemOption = template['hasNoItemOption'];
-};
-
-Game.Screen.ItemListScreen.prototype.setup = function(player, items) {
-    this._player = player;
-    // Should be called before switching to the screen.
-    var count = 0;
-    // Iterate over each item, keeping only the aceptable ones and counting
-    // the number of acceptable items.
-    var that = this;
-    this._items = items.map(function(item) {
-        // Transform the item into null if it's not acceptable
-        if (that._isAcceptableFunction(item)) {
-            count++;
-            return item;
-        } else {
-            return null;
+class ItemListScreen {
+    constructor(template) {
+        // Set up based on the template
+        this._caption = template['caption'];
+        this._okFunction = template['ok'];
+        // By default, we use the identity function
+        this._isAcceptableFunction = template['isAcceptable'] || function(x) {
+            return x;
         }
-    });
-    // Clean set of selected indices
-    this._selectedIndices = {};
-    return count;
-};
-
-Game.Screen.ItemListScreen.prototype.render = function(display) {
-    var letters = 'abcdefghijklmnopqrstuvwxyz';
-    // Render the caption in the top row
-    display.drawText(0, 0, this._caption);
-    // Render the no item row if enabled
-    if (this._hasNoItemOption) {
-        display.drawText(0, 1, '0 - no item');
+        // Whether the user can select items at all.
+        this._canSelectItem = template['canSelect'];
+        // Whether the user can select multiple items.
+        this._canSelectMultipleItems = template['canSelectMultipleItems'];
+        // Whether a 'no item' option should appear.
+        this._hasNoItemOption = template['hasNoItemOption'];
     }
-    var row = 0;
-    for (var i = 0; i < this._items.length; i++) {
-        // If we have an item, we want to render it.
-        if (this._items[i]) {
-            // Get the letter matching the item's index
-            var letter = letters.substring(i, i + 1);
-            // If we have selected an item, show a +, else show a dash between
-            // the letter and the item's name.
-            var selectionState = (this._canSelectItem && this._canSelectMultipleItems &&
-                this._selectedIndices[i]) ? '+' : '-';
-            // Check if the item is worn or wielded
-            var suffix = '';
-            if (this._items[i] === this._player.getArmor()) {
-                suffix = ' (wearing)';
-            } else if (this._items[i] === this._player.getWeapon()) {
-                suffix = ' (wielding)';
+
+    setup(game, player, items) {
+        this._game = game;
+        this._player = player;
+        // Should be called before switching to the screen.
+        var count = 0;
+        // Iterate over each item, keeping only the aceptable ones and counting
+        // the number of acceptable items.
+        var that = this;
+        this._items = items.map(function(item) {
+            // Transform the item into null if it's not acceptable
+            if (that._isAcceptableFunction(item)) {
+                count++;
+                return item;
+            } else {
+                return null;
             }
-            // Render at the correct row and add 2.
-            display.drawText(0, 2 + row,  letter + ' ' + selectionState + ' ' +
-                this._items[i].describe() + suffix);
-            row++;
+        });
+        // Clean set of selected indices
+        this._selectedIndices = {};
+        return count;
+    }
+
+    getGame() {
+        return this._game;
+    }
+
+    render(display) {
+        var letters = 'abcdefghijklmnopqrstuvwxyz';
+        // Render the caption in the top row
+        display.drawText(0, 0, this._caption);
+        // Render the no item row if enabled
+        if (this._hasNoItemOption) {
+            display.drawText(0, 1, '0 - no item');
+        }
+        var row = 0;
+        for (var i = 0; i < this._items.length; i++) {
+            // If we have an item, we want to render it.
+            if (this._items[i]) {
+                // Get the letter matching the item's index
+                var letter = letters.substring(i, i + 1);
+                // If we have selected an item, show a +, else show a dash between
+                // the letter and the item's name.
+                var selectionState = (this._canSelectItem && this._canSelectMultipleItems &&
+                    this._selectedIndices[i]) ? '+' : '-';
+                // Check if the item is worn or wielded
+                var suffix = '';
+                if (this._items[i] === this._player.getArmor()) {
+                    suffix = ' (wearing)';
+                } else if (this._items[i] === this._player.getWeapon()) {
+                    suffix = ' (wielding)';
+                }
+                // Render at the correct row and add 2.
+                display.drawText(0, 2 + row,  letter + ' ' + selectionState + ' ' +
+                    this._items[i].describe() + suffix);
+                row++;
+            }
         }
     }
-};
 
-Game.Screen.ItemListScreen.prototype.executeOkFunction = function() {
-    // Gather the selected items.
-    var selectedItems = {};
-    for (var key in this._selectedIndices) {
-        selectedItems[key] = this._items[key];
+    executeOkFunction() {
+        // Gather the selected items.
+        var selectedItems = {};
+        for (var key in this._selectedIndices) {
+            selectedItems[key] = this._items[key];
+        }
+        // Switch back to the play screen.
+        this._game.getCurrentScreen().setSubScreen(undefined);
+        // Call the OK function and end the player's turn if it return true.
+        if (this._okFunction(selectedItems)) {
+            this._player.getMap().getEngine().unlock();
+        }
     }
-    // Switch back to the play screen.
-    Game.Screen.playScreen.setSubScreen(undefined);
-    // Call the OK function and end the player's turn if it return true.
-    if (this._okFunction(selectedItems)) {
-        this._player.getMap().getEngine().unlock();
-    }
-};
-Game.Screen.ItemListScreen.prototype.handleInput = function(inputType, inputData) {
-    if (inputType === 'keydown') {
-        // If the user hit escape, hit enter and can't select an item, or hit
-        // enter without any items selected, simply cancel out
-        if (inputData.keyCode === KEYS.VK_ESCAPE || 
-            (inputData.keyCode === KEYS.VK_RETURN && 
-                (!this._canSelectItem || Object.keys(this._selectedIndices).length === 0))) {
-            Game.Screen.playScreen.setSubScreen(undefined);
-        // Handle pressing return when items are selected
-        } else if (inputData.keyCode === KEYS.VK_RETURN) {
-            this.executeOkFunction();
-        // Handle pressing zero when 'no item' selection is enabled
-        } else if (this._canSelectItem && this._hasNoItemOption && inputData.keyCode === KEYS.VK_0) {
-            this._selectedIndices = {};
-            this.executeOkFunction();
-        // Handle pressing a letter if we can select
-        } else if (this._canSelectItem && inputData.keyCode >= KEYS.VK_A &&
-            inputData.keyCode <= KEYS.VK_Z) {
-            // Check if it maps to a valid item by subtracting 'a' from the character
-            // to know what letter of the alphabet we used.
-            var index = inputData.keyCode - KEYS.VK_A;
-            if (this._items[index]) {
-                // If multiple selection is allowed, toggle the selection status, else
-                // select the item and exit the screen
-                if (this._canSelectMultipleItems) {
-                    if (this._selectedIndices[index]) {
-                        delete this._selectedIndices[index];
+
+    handleInput(inputType, inputData) {
+        if (inputType === 'keydown') {
+            // If the user hit escape, hit enter and can't select an item, or hit
+            // enter without any items selected, simply cancel out
+            if (inputData.keyCode === KEYS.VK_ESCAPE || 
+                (inputData.keyCode === KEYS.VK_RETURN && 
+                    (!this._canSelectItem || Object.keys(this._selectedIndices).length === 0))) {
+                this._game.getCurrentScreen().setSubScreen(undefined);
+            // Handle pressing return when items are selected
+            } else if (inputData.keyCode === KEYS.VK_RETURN) {
+                this.executeOkFunction();
+            // Handle pressing zero when 'no item' selection is enabled
+            } else if (this._canSelectItem && this._hasNoItemOption && inputData.keyCode === KEYS.VK_0) {
+                this._selectedIndices = {};
+                this.executeOkFunction();
+            // Handle pressing a letter if we can select
+            } else if (this._canSelectItem && inputData.keyCode >= KEYS.VK_A &&
+                inputData.keyCode <= KEYS.VK_Z) {
+                // Check if it maps to a valid item by subtracting 'a' from the character
+                // to know what letter of the alphabet we used.
+                var index = inputData.keyCode - KEYS.VK_A;
+                if (this._items[index]) {
+                    // If multiple selection is allowed, toggle the selection status, else
+                    // select the item and exit the screen
+                    if (this._canSelectMultipleItems) {
+                        if (this._selectedIndices[index]) {
+                            delete this._selectedIndices[index];
+                        } else {
+                            this._selectedIndices[index] = true;
+                        }
+                        // Redraw screen
+                        this.getGame().refresh();
                     } else {
                         this._selectedIndices[index] = true;
+                        this.executeOkFunction();
                     }
-                    // Redraw screen
-                    Game.refresh();
-                } else {
-                    this._selectedIndices[index] = true;
-                    this.executeOkFunction();
                 }
             }
         }
-    }
-};
+    }    
+}
 
-Game.Screen.inventoryScreen = new Game.Screen.ItemListScreen({
+GameScreens.inventoryScreen = new ItemListScreen({
     caption: 'Inventory',
     canSelect: false
 });
 
-Game.Screen.pickupScreen = new Game.Screen.ItemListScreen({
+GameScreens.pickupScreen = new ItemListScreen({
     caption: 'Choose the items you wish to pickup',
     canSelect: true,
     canSelectMultipleItems: true,
@@ -543,7 +548,7 @@ Game.Screen.pickupScreen = new Game.Screen.ItemListScreen({
     }
 });
 
-Game.Screen.dropScreen = new Game.Screen.ItemListScreen({
+GameScreens.dropScreen = new ItemListScreen({
     caption: 'Choose the item you wish to drop',
     canSelect: true,
     canSelectMultipleItems: false,
@@ -554,7 +559,7 @@ Game.Screen.dropScreen = new Game.Screen.ItemListScreen({
     }
 });
 
-Game.Screen.eatScreen = new Game.Screen.ItemListScreen({
+GameScreens.eatScreen = new ItemListScreen({
     caption: 'Choose the item you wish to eat',
     canSelect: true,
     canSelectMultipleItems: false,
@@ -574,7 +579,7 @@ Game.Screen.eatScreen = new Game.Screen.ItemListScreen({
     }
 });
 
-Game.Screen.wieldScreen = new Game.Screen.ItemListScreen({
+GameScreens.wieldScreen = new ItemListScreen({
     caption: 'Choose the item you wish to wield',
     canSelect: true,
     canSelectMultipleItems: false,
@@ -599,7 +604,7 @@ Game.Screen.wieldScreen = new Game.Screen.ItemListScreen({
     }
 });
 
-Game.Screen.wearScreen = new Game.Screen.ItemListScreen({
+GameScreens.wearScreen = new ItemListScreen({
     caption: 'Choose the item you wish to wear',
     canSelect: true,
     canSelectMultipleItems: false,
@@ -624,9 +629,10 @@ Game.Screen.wearScreen = new Game.Screen.ItemListScreen({
     }
 });
 
-Game.Screen.gainStatScreen = {
-    setup: function(entity) {
+GameScreens.gainStatScreen = {
+    setup: function(game, entity) {
         // Must be called before rendering.
+        this._game = game;
         this._entity = entity;
         this._options = entity.getStatOptions();
     },
@@ -658,9 +664,9 @@ Game.Screen.gainStatScreen = {
                     this._entity.setStatPoints(this._entity.getStatPoints() - 1);
                     // If we have no stat points left, exit the screen, else refresh
                     if (this._entity.getStatPoints() == 0) {
-                        Game.Screen.playScreen.setSubScreen(undefined);
+                        this._game.getCurrentScreen().setSubScreen(undefined);
                     } else {
-                        Game.refresh();
+                        this.getGame().refresh();
                     }
                 }
             }
@@ -668,7 +674,7 @@ Game.Screen.gainStatScreen = {
     }
 };
 
-Game.Screen.examineScreen = new Game.Screen.ItemListScreen({
+GameScreens.examineScreen = new ItemListScreen({
     caption: 'Choose the item you wish to examine',
     canSelect: true,
     canSelectMultipleItems: false,
@@ -689,100 +695,106 @@ Game.Screen.examineScreen = new Game.Screen.ItemListScreen({
     }
 });
 
-Game.Screen.TargetBasedScreen = function(template) {
-    template = template || {};
-    // By default, our ok return does nothing and does not consume a turn.
-    this._isAcceptableFunction = template['isAcceptable'] || function(item) {
-        return false;
-    };
-    // OK ??
-    this._okFunction = template['ok'] || function(items) {
-        // Do not finish turn
-        return false;
-    };
-    // The defaut caption function simply returns an empty string.
-    this._captionFunction = template['captionFunction'] || function(x, y) {
-        return '';
-    }
-};
-
-Game.Screen.TargetBasedScreen.prototype.setup = function(player, startX, startY, offsetX, offsetY) {
-    this._player = player;
-    // Store original position. Subtract the offset to make life easy so we don't
-    // always have to remove it.
-    this._startX = startX - offsetX;
-    this._startY = startY - offsetY;
-    // Store current cursor position
-    this._cursorX = this._startX;
-    this._cursorY = this._startY;
-    // Store map offsets
-    this._offsetX = offsetX;
-    this._offsetY = offsetY;
-    // Cache the FOV
-    var visibleCells = {};
-    this._player.getMap().getFov(this._player.getZ()).compute(
-        this._player.getX(), this._player.getY(), 
-        this._player.getSightRadius(), 
-        function(x, y, radius, visibility) {
-            visibleCells[x + "," + y] = true;
-        });
-    this._visibleCells = visibleCells;
-};
-
-Game.Screen.TargetBasedScreen.prototype.render = function(display) {
-    Game.Screen.playScreen.renderTiles.call(Game.Screen.playScreen, display);
-
-    // Draw a line from the start to the cursor.
-    var points = Geometry.getLine(this._startX, this._startY, this._cursorX,
-        this._cursorY);
-
-    // Render stars along the line.
-    for (var i = 0, l = points.length; i < l; i++) {
-        display.drawText(points[i].x, points[i].y, '%c{magenta}*');
-    }
-
-    // Render the caption at the bottom.
-    display.drawText(0, this.getGame().getScreenHeight() - 1, 
-        this._captionFunction(this._cursorX + this._offsetX, this._cursorY + this._offsetY));
-};
-
-Game.Screen.TargetBasedScreen.prototype.handleInput = function(inputType, inputData) {
-    // Move the cursor
-    if (inputType == 'keydown') {
-        if (inputData.keyCode === KEYS.VK_LEFT) {
-            this.moveCursor(-1, 0);
-        } else if (inputData.keyCode === KEYS.VK_RIGHT) {
-            this.moveCursor(1, 0);
-        } else if (inputData.keyCode === KEYS.VK_UP) {
-            this.moveCursor(0, -1);
-        } else if (inputData.keyCode === KEYS.VK_DOWN) {
-            this.moveCursor(0, 1);
-        } else if (inputData.keyCode === KEYS.VK_ESCAPE) {
-            Game.Screen.playScreen.setSubScreen(undefined);
-        } else if (inputData.keyCode === KEYS.VK_RETURN) {
-            this.executeOkFunction();
+class TargetBasedScreen {
+    constructor(template={}) {
+        // By default, our ok return does nothing and does not consume a turn.
+        this._isAcceptableFunction = template['isAcceptable'] || function(item) {
+            return false;
+        };
+        // OK ??
+        this._okFunction = template['ok'] || function(items) {
+            // Do not finish turn
+            return false;
+        };
+        // The defaut caption function simply returns an empty string.
+        this._captionFunction = template['captionFunction'] || function(x, y) {
+            return '';
         }
     }
-    Game.refresh();
-};
 
-Game.Screen.TargetBasedScreen.prototype.moveCursor = function(dx, dy) {
-    // Make sure we stay within bounds.
-    this._cursorX = Math.max(0, Math.min(this._cursorX + dx, this.getGame().getScreenWidth()));
-    // We have to save the last line for the caption.
-    this._cursorY = Math.max(0, Math.min(this._cursorY + dy, this.getGame().getScreenHeight() - 1));
-};
-
-Game.Screen.TargetBasedScreen.prototype.executeOkFunction = function() {
-    // Switch back to the play screen.
-    Game.Screen.playScreen.setSubScreen(undefined);
-    // Call the OK function and end the player's turn if it return true.
-    if (this._okFunction(this._cursorX + this._offsetX, this._cursorY + this._offsetY)) {
-        this._player.getMap().getEngine().unlock();
+    setup(game, player, startX, startY, offsetX, offsetY) {
+        this._game = game;
+        this._player = player;
+        // Store original position. Subtract the offset to make life easy so we don't
+        // always have to remove it.
+        this._startX = startX - offsetX;
+        this._startY = startY - offsetY;
+        // Store current cursor position
+        this._cursorX = this._startX;
+        this._cursorY = this._startY;
+        // Store map offsets
+        this._offsetX = offsetX;
+        this._offsetY = offsetY;
+        // Cache the FOV
+        var visibleCells = {};
+        this._player.getMap().getFov(this._player.getZ()).compute(
+            this._player.getX(), this._player.getY(), 
+            this._player.getSightRadius(), 
+            function(x, y, radius, visibility) {
+                visibleCells[x + "," + y] = true;
+            });
+        this._visibleCells = visibleCells;
     }
-};
 
-Game.Screen.lookScreen = new Game.Screen.TargetBasedScreen({
+    getGame() {
+        return this._game;
+    }
+
+    render(display) {
+        PlayScreen.prototype.renderTiles.call(this._game.getCurrentScreen(), display);
+    
+        // Draw a line from the start to the cursor.
+        var points = Geometry.getLine(this._startX, this._startY, this._cursorX,
+            this._cursorY);
+    
+        // Render stars along the line.
+        for (var i = 0, l = points.length; i < l; i++) {
+            display.drawText(points[i].x, points[i].y, '%c{magenta}*');
+        }
+    
+        // Render the caption at the bottom.
+        display.drawText(0, this.getGame().getScreenHeight() - 1, 
+            this._captionFunction(this._cursorX + this._offsetX, this._cursorY + this._offsetY));
+    }    
+
+    handleInput(inputType, inputData) {
+        // Move the cursor
+        if (inputType == 'keydown') {
+            if (inputData.keyCode === KEYS.VK_LEFT) {
+                this.moveCursor(-1, 0);
+            } else if (inputData.keyCode === KEYS.VK_RIGHT) {
+                this.moveCursor(1, 0);
+            } else if (inputData.keyCode === KEYS.VK_UP) {
+                this.moveCursor(0, -1);
+            } else if (inputData.keyCode === KEYS.VK_DOWN) {
+                this.moveCursor(0, 1);
+            } else if (inputData.keyCode === KEYS.VK_ESCAPE) {
+                this._game.getCurrentScreen().setSubScreen(undefined);
+            } else if (inputData.keyCode === KEYS.VK_RETURN) {
+                this.executeOkFunction();
+            }
+        }
+        this.getGame().refresh();
+    }
+
+    moveCursor(dx, dy) {
+        // Make sure we stay within bounds.
+        this._cursorX = Math.max(0, Math.min(this._cursorX + dx, this.getGame().getScreenWidth()));
+        // We have to save the last line for the caption.
+        this._cursorY = Math.max(0, Math.min(this._cursorY + dy, this.getGame().getScreenHeight() - 1));
+    }
+
+    executeOkFunction() {
+        // Switch back to the play screen.
+        this._game.getCurrentScreen().setSubScreen(undefined);
+        // Call the OK function and end the player's turn if it return true.
+        if (this._okFunction(this._cursorX + this._offsetX, this._cursorY + this._offsetY)) {
+            this._player.getMap().getEngine().unlock();
+        }
+    }
+}
+
+GameScreens.lookScreen = new TargetBasedScreen({
     captionFunction: function(x, y) {
         var z = this._player.getZ();
         var map = this._player.getMap();
@@ -828,7 +840,7 @@ Game.Screen.lookScreen = new Game.Screen.TargetBasedScreen({
 });
 
 // Define our help screen
-Game.Screen.helpScreen = {
+GameScreens.helpScreen = {
     render: function(display) {
         var text = 'jsrogue help';
         var border = '-------------';
@@ -851,11 +863,13 @@ Game.Screen.helpScreen = {
         display.drawText(this.getGame().getScreenWidth() / 2 - text.length / 2, y++, text);
     },
     handleInput: function(inputType, inputData) {
-        Game.Screen.playScreen.setSubScreen(null);
+        this._game.getCurrentScreen().setSubScreen(null);
     }
 };
 
 export {
     StartScreen,
-    PlayScreen
+    PlayScreen,
+    WinScreen,
+    GameScreens
 }

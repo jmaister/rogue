@@ -1,4 +1,6 @@
 
+import Item from './item';
+
 const ItemMixins = {};
 
 // Edible mixins

@@ -1,8 +1,8 @@
 
 import {Path} from 'rot-js';
 
-import Game from './game';
 import Utilities from './utilities';
+import {GameScreens, WinScreen} from './screens'
 
 // Create our Mixins namespace
 const EntityMixins = {};
@@ -144,7 +144,7 @@ EntityMixins.PlayerActor = {
         this.addTurnHunger();
         // Detect if the game is over
         if (!this.isAlive()) {
-            Game.Screen.playScreen.setGameEnded(true);
+            this.getGame().getCurrentScreen().setGameEnded(true);
             // Send a last message to the player
             Utilities.sendMessage(this, 'Press [Enter] to continue!');
         }
@@ -618,8 +618,8 @@ EntityMixins.PlayerStatGainer = {
     listeners: {
         onGainLevel: function() {
             // Setup the gain stat screen and show it.
-            Game.Screen.gainStatScreen.setup(this);
-            Game.Screen.playScreen.setSubScreen(Game.Screen.gainStatScreen);
+            GameScreens.gainStatScreen.setup(this.getGame(), this);
+            this.getGame().getCurrentScreen().setSubScreen(GameScreens.gainStatScreen);
         }
     }
 };
@@ -675,7 +675,7 @@ EntityMixins.GiantZombieActor = Utilities.extend(EntityMixins.TaskActor, {
     listeners: {
         onDeath: function(attacker) {
             // Switch to win screen when killed!
-            Game.switchScreen(Game.Screen.winScreen);
+            this.getGame().switchScreen(new WinScreen(this.getGame()));
         }
     }
 });

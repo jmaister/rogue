@@ -58,6 +58,9 @@ class Game {
     getItemRepository() {
         return this._itemRepository;
     }
+    getCurrentScreen() {
+        return this._currentScreen;
+    }
     
     switchScreen(screen) {
         // If we had a screen before, notify it that we exited

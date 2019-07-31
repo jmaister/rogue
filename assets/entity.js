@@ -1,6 +1,9 @@
 import DynamicGlyph from './dynamicglyph';
 import EntityMixins from './entitymixins';
 import Utilities from './utilities';
+import Tile from './tile';
+
+import BossCavern from './maps/bosscavern';
 
 class Entity extends DynamicGlyph {
 
@@ -122,7 +125,7 @@ class Entity extends DynamicGlyph {
             if (tile === Tile.holeToCavernTile &&
                 this.hasMixin(EntityMixins.PlayerActor)) {
                 // Switch the entity to a boss cavern!
-                this.switchMap(new Map.BossCavern());
+                this.switchMap(new BossCavern(this.getGame()));
             } else if (tile != Tile.stairsDownTile) {
                 Utilities.sendMessage(this, "You can't go down here!");
             } else {

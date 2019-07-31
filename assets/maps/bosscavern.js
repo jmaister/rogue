@@ -1,18 +1,19 @@
 import Map from '../map';
-
-import {EntityRepository} from '../entities';
+import Tile from '../tile';
 
 class BossCavern extends Map {
-    constructor() {
+    constructor(game) {
         // Call the Map constructor
-        super(this._generateTiles(80, 24));
+        super(BossCavern.generateTiles(80, 24));
+
+        this._game = game;
         // Create the giant zombie
-        this.addEntityAtRandomPosition(EntityRepository.create('giant zombie'), 0);
+        this.addEntityAtRandomPosition(game.getEntityRepository().create('giant zombie'), 0);
     }
 
     addEntity(entity) {
         // Call super method.
-        Game.Map.prototype.addEntity.call(this, entity);
+        super.addEntity(entity);
         // If it's a player, place at random position
         if (this.getPlayer() === entity) {
             var position = this.getRandomFloorPosition(0);
@@ -22,7 +23,7 @@ class BossCavern extends Map {
         }
     }
     
-    _fillCircle(tiles, centerX, centerY, radius, tile) {
+    static fillCircle(tiles, centerX, centerY, radius, tile) {
         // Copied from the DrawFilledCircle algorithm
         // http://stackoverflow.com/questions/1201200/fast-algorithm-for-drawing-filled-circles
         var x = radius;
@@ -52,7 +53,7 @@ class BossCavern extends Map {
         }
     }
 
-    _generateTiles(width, height) {
+    static generateTiles(width, height) {
         // First we create an array, filling it with empty tiles.
         var tiles = new Array(width);
         for (var x = 0; x < width; x++) {
@@ -63,7 +64,7 @@ class BossCavern extends Map {
         }
         // Now we determine the radius of the cave to carve out.
         var radius = (Math.min(width, height) - 2) / 2;
-        this._fillCircle(tiles, width / 2, height / 2, radius, Tile.floorTile);
+        BossCavern.fillCircle(tiles, width / 2, height / 2, radius, Tile.floorTile);
     
         // Now we randomly position lakes (3 - 6 lakes)
         var lakes = Math.round(Math.random() * 3) + 3;
@@ -78,7 +79,7 @@ class BossCavern extends Map {
             // Random radius
             var radius = Math.floor(Math.random() * maxRadius) + 1;
             // Position the lake!
-            this._fillCircle(tiles, centerX, centerY, radius, Tile.waterTile);
+            BossCavern.fillCircle(tiles, centerX, centerY, radius, Tile.waterTile);
         }
     
         // Return the tiles in an array as we only have 1 depth level.
