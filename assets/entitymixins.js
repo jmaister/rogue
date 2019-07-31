@@ -363,19 +363,19 @@ EntityMixins.FoodConsumer = {
         var perPercent = this._maxFullness / 100;
         // 5% of max fullness or less = starving
         if (this._fullness <= perPercent * 5) {
-            return 'Starving';
+            return '%b{red}%c{white}Starving%c{}%b{}';
         // 25% of max fullness or less = hungry
         } else if (this._fullness <= perPercent * 25) {
-            return 'Hungry';
+            return '%c{orange}Hungry%c{}';
         // 75% of max fullness or more = oversatiated
         } else if (this._fullness >= perPercent * 75) {
-            return 'Oversatiated';
+            return '%c{green}Oversatiated%c{}';
         // 95% of max fullness or more = full
         } else if (this._fullness >= perPercent * 95) {
-            return 'Full';
+            return '%c{green}Full%c{}';
         // Anything else = not hungry
         } else {
-            return 'Not Hungry';
+            return '%c{green}Not Hungry%c{}';
         }
     }
 };

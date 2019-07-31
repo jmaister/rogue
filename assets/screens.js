@@ -130,7 +130,7 @@ class PlayScreen extends Screen {
         display.drawText(0, screenHeight, stats);
         // Render hunger state
         var hungerState = this._player.getHungerState();
-        display.drawText(screenWidth - hungerState.length, screenHeight, hungerState);
+        display.drawText(screenWidth - 12, screenHeight, hungerState);
     }
 
     renderTiles(display) {
