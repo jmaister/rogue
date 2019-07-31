@@ -1,9 +1,19 @@
+import DynamicGlyph from './dynamicglyph';
+import EntityMixins from './entitymixins';
+import Utilities from './utilities';
+import Tile from './tile';
+
+import BossCavern from './maps/bosscavern';
 
 class Entity extends DynamicGlyph {
 
     constructor(properties={}) {
         // Call the glyph's construtor with our set of properties
         super(properties);
+
+        // Game
+        this._game = properties['game'] || '';
+
         // Instantiate any properties from the passed object
         this._name = properties['name'] || '';
         this._x = properties['x'] || 0;
@@ -12,7 +22,7 @@ class Entity extends DynamicGlyph {
         this._map = null;
         this._alive = true;
         // Acting speed
-        this._speed = properties['speed'] || 1000;        
+        this._speed = properties['speed'] || 1000;     
 
         // Create an object which will keep track what mixins we have
         // attached to this entity based on the name property
@@ -77,6 +87,12 @@ class Entity extends DynamicGlyph {
     getSpeed() {
         return this._speed;
     }
+    setGame(game) {
+        this._game = game;
+    }
+    getGame() {
+        return this._game;
+    }
 
     setPosition(x, y, z) {
         var oldX = this._x;
@@ -92,7 +108,7 @@ class Entity extends DynamicGlyph {
         }
     }
 
-    tryMove(x, y, z, map) {
+    tryMove(x, y, z) {
         var map = this.getMap();
         // Must use starting z
         var tile = map.getTile(x, y, this.getZ());
@@ -100,29 +116,29 @@ class Entity extends DynamicGlyph {
         // If our z level changed, check if we are on stair
         if (z < this.getZ()) {
             if (tile != Tile.stairsUpTile) {
-                Game.sendMessage(this, "You can't go up here!");
+                Utilities.sendMessage(this, "You can't go up here!");
             } else {
-                Game.sendMessage(this, "You ascend to level %d!", [z + 1]);
+                Utilities.sendMessage(this, "You ascend to level %d!", [z + 1]);
                 this.setPosition(x, y, z);
             }
         } else if (z > this.getZ()) {
             if (tile === Tile.holeToCavernTile &&
-                this.hasMixin(Game.EntityMixins.PlayerActor)) {
+                this.hasMixin(EntityMixins.PlayerActor)) {
                 // Switch the entity to a boss cavern!
-                this.switchMap(new Map.BossCavern());
+                this.switchMap(new BossCavern(this.getGame()));
             } else if (tile != Tile.stairsDownTile) {
-                Game.sendMessage(this, "You can't go down here!");
+                Utilities.sendMessage(this, "You can't go down here!");
             } else {
                 this.setPosition(x, y, z);
-                Game.sendMessage(this, "You descend to level %d!", [z + 1]);
+                Utilities.sendMessage(this, "You descend to level %d!", [z + 1]);
             }
         // If an entity was present at the tile
         } else if (target) {
             // An entity can only attack if the entity has the Attacker mixin and 
             // either the entity or the target is the player.
             if (this.hasMixin('Attacker') && 
-                (this.hasMixin(Game.EntityMixins.PlayerActor) ||
-                target.hasMixin(Game.EntityMixins.PlayerActor))) {
+                (this.hasMixin(EntityMixins.PlayerActor) ||
+                target.hasMixin(EntityMixins.PlayerActor))) {
                 this.attack(target);
                 return true;
             } 
@@ -138,9 +154,9 @@ class Entity extends DynamicGlyph {
             var items = this.getMap().getItemsAt(x, y, z);
             if (items) {
                 if (items.length === 1) {
-                    Game.sendMessage(this, "You see %s.", [items[0].describeA()]);
+                    Utilities.sendMessage(this, "You see %s.", [items[0].describeA()]);
                 } else {
-                    Game.sendMessage(this, "There are several objects here.");
+                    Utilities.sendMessage(this, "There are several objects here.");
                 }
             }
             return true;
@@ -148,7 +164,7 @@ class Entity extends DynamicGlyph {
         // if so try to dig it
         } else if (tile.isDiggable()) {
             // Only dig if the the entity is the player
-            if (this.hasMixin(Game.EntityMixins.PlayerActor)) {
+            if (this.hasMixin(EntityMixins.PlayerActor)) {
                 map.dig(x, y, z);
                 return true;
             }
@@ -166,13 +182,13 @@ class Entity extends DynamicGlyph {
         }
         this._alive = false;
         if (message) {
-            Game.sendMessage(this, message);
+            Utilities.sendMessage(this, message);
         } else {
-            Game.sendMessage(this, "You have died!");
+            Utilities.sendMessage(this, "You have died!");
         }
     
         // Check if the player died, and if so call their act method to prompt the user.
-        if (this.hasMixin(Game.EntityMixins.PlayerActor)) {
+        if (this.hasMixin(EntityMixins.PlayerActor)) {
             this.act();
         } else {
             this.getMap().removeEntity(this);
@@ -193,3 +209,5 @@ class Entity extends DynamicGlyph {
         newMap.addEntity(this);
     }
 }
+
+export default Entity;

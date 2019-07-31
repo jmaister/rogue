@@ -1,6 +1,9 @@
+import Repository from './repository';
+import EntityMixins from './entitymixins';
+import Entity from './entity';
 
 // Player template
-Game.PlayerTemplate = {
+const PlayerTemplate = {
     name: 'human (you)',
     character: '@',
     foreground: 'white',
@@ -10,124 +13,147 @@ Game.PlayerTemplate = {
     sightRadius: 6,
     inventorySlots: 22,
     mixins: [
-        Game.EntityMixins.PlayerActor,
-        Game.EntityMixins.Attacker,
-        Game.EntityMixins.Destructible,
-        Game.EntityMixins.InventoryHolder,
-        Game.EntityMixins.FoodConsumer,
-        Game.EntityMixins.Sight,
-        Game.EntityMixins.MessageRecipient,
-        Game.EntityMixins.Equipper,
-        Game.EntityMixins.ExperienceGainer,
-        Game.EntityMixins.PlayerStatGainer
+        EntityMixins.PlayerActor,
+        EntityMixins.Attacker,
+        EntityMixins.Destructible,
+        EntityMixins.InventoryHolder,
+        EntityMixins.FoodConsumer,
+        EntityMixins.Sight,
+        EntityMixins.MessageRecipient,
+        EntityMixins.Equipper,
+        EntityMixins.ExperienceGainer,
+        EntityMixins.PlayerStatGainer
     ]
+};
+
+class EntityRepository extends Repository {
+
+    constructor(game) {
+        super('entities', Entity);
+        this._game = game;
+
+        this.define('fungus', {
+            name: 'fungus',
+            character: 'F',
+            foreground: 'green',
+            maxHp: 10,
+            speed: 250,
+            mixins: [
+                EntityMixins.FungusActor,
+                EntityMixins.Destructible,
+                EntityMixins.ExperienceGainer,
+                EntityMixins.RandomStatGainer
+            ]
+        });
+        
+        this.define('bat', {
+            name: 'bat',
+            character: 'B',
+            foreground: 'white',
+            maxHp: 5,
+            attackValue: 4,
+            speed: 2000,
+            mixins: [
+                EntityMixins.TaskActor,
+                EntityMixins.Attacker,
+                EntityMixins.Destructible,
+                EntityMixins.CorpseDropper,
+                EntityMixins.ExperienceGainer,
+                EntityMixins.RandomStatGainer
+            ]
+        });
+        
+        this.define('newt', {
+            name: 'newt',
+            character: ':',
+            foreground: 'yellow',
+            maxHp: 3,
+            attackValue: 2,
+            mixins: [
+                EntityMixins.TaskActor, 
+                EntityMixins.Attacker,
+                EntityMixins.Destructible,
+                EntityMixins.CorpseDropper,
+                EntityMixins.ExperienceGainer,
+                EntityMixins.RandomStatGainer
+            ]
+        });
+        
+        
+        this.define('kobold', {
+            name: 'kobold',
+            character: 'k',
+            foreground: 'white',
+            maxHp: 6,
+            attackValue: 4,
+            sightRadius: 5,
+            tasks: ['hunt', 'wander'],
+            mixins: [
+                EntityMixins.TaskActor,
+                EntityMixins.Sight,
+                EntityMixins.Attacker,
+                EntityMixins.Destructible,
+                EntityMixins.CorpseDropper,
+                EntityMixins.ExperienceGainer,
+                EntityMixins.RandomStatGainer
+            ]
+        });
+        
+        this.define('giant zombie', {
+            name: 'giant zombie', 
+            character: 'Z',
+            foreground: 'teal',
+            maxHp: 30,
+            attackValue: 8,
+            defenseValue: 5,
+            level: 5,
+            sightRadius: 6,
+            mixins: [
+                EntityMixins.GiantZombieActor,
+                EntityMixins.Sight,
+                EntityMixins.Attacker,
+                EntityMixins.Destructible,
+                EntityMixins.CorpseDropper,
+                EntityMixins.ExperienceGainer
+            ]
+        }, {
+            disableRandomCreation: true
+        });
+        
+        this.define('slime', {
+            name: 'slime',
+            character: 's',
+            foreground: 'lightGreen',
+            maxHp: 10,
+            attackValue: 5,
+            sightRadius: 3,
+            tasks: ['hunt', 'wander'],
+            mixins: [
+                EntityMixins.TaskActor,
+                EntityMixins.Sight,
+                EntityMixins.Attacker,
+                EntityMixins.Destructible,
+                EntityMixins.CorpseDropper,
+                EntityMixins.ExperienceGainer,
+                EntityMixins.RandomStatGainer
+            ]
+        });
+    }
+
+    getGame() {
+        return this._game;
+    }
+
+    create(name, extraProperties) {
+        return super.create(name, Object.assign({
+            ...extraProperties,
+            game: this.getGame()
+        }));
+    }
+
 }
 
-Game.EntityRepository = new Repository('entities', Entity);
-
-Game.EntityRepository.define('fungus', {
-    name: 'fungus',
-    character: 'F',
-    foreground: 'green',
-    maxHp: 10,
-    speed: 250,
-    mixins: [
-        Game.EntityMixins.FungusActor,
-        Game.EntityMixins.Destructible,
-        Game.EntityMixins.ExperienceGainer,
-        Game.EntityMixins.RandomStatGainer
-    ]
-});
-
-Game.EntityRepository.define('bat', {
-    name: 'bat',
-    character: 'B',
-    foreground: 'white',
-    maxHp: 5,
-    attackValue: 4,
-    speed: 2000,
-    mixins: [
-        Game.EntityMixins.TaskActor,
-        Game.EntityMixins.Attacker,
-        Game.EntityMixins.Destructible,
-        Game.EntityMixins.CorpseDropper,
-        Game.EntityMixins.ExperienceGainer,
-        Game.EntityMixins.RandomStatGainer
-    ]
-});
-
-Game.EntityRepository.define('newt', {
-    name: 'newt',
-    character: ':',
-    foreground: 'yellow',
-    maxHp: 3,
-    attackValue: 2,
-    mixins: [
-        Game.EntityMixins.TaskActor, 
-        Game.EntityMixins.Attacker,
-        Game.EntityMixins.Destructible,
-        Game.EntityMixins.CorpseDropper,
-        Game.EntityMixins.ExperienceGainer,
-        Game.EntityMixins.RandomStatGainer
-    ]
-});
-
-
-Game.EntityRepository.define('kobold', {
-    name: 'kobold',
-    character: 'k',
-    foreground: 'white',
-    maxHp: 6,
-    attackValue: 4,
-    sightRadius: 5,
-    tasks: ['hunt', 'wander'],
-    mixins: [
-        Game.EntityMixins.TaskActor,
-        Game.EntityMixins.Sight,
-        Game.EntityMixins.Attacker,
-        Game.EntityMixins.Destructible,
-        Game.EntityMixins.CorpseDropper,
-        Game.EntityMixins.ExperienceGainer,
-        Game.EntityMixins.RandomStatGainer
-    ]
-});
-
-Game.EntityRepository.define('giant zombie', {
-    name: 'giant zombie', 
-    character: 'Z',
-    foreground: 'teal',
-    maxHp: 30,
-    attackValue: 8,
-    defenseValue: 5,
-    level: 5,
-    sightRadius: 6,
-    mixins: [
-        Game.EntityMixins.GiantZombieActor,
-        Game.EntityMixins.Sight,
-        Game.EntityMixins.Attacker,
-        Game.EntityMixins.Destructible,
-        Game.EntityMixins.CorpseDropper,
-        Game.EntityMixins.ExperienceGainer
-    ]
-}, {
-    disableRandomCreation: true
-});
-
-Game.EntityRepository.define('slime', {
-    name: 'slime',
-    character: 's',
-    foreground: 'lightGreen',
-    maxHp: 10,
-    attackValue: 5,
-    sightRadius: 3,
-    tasks: ['hunt', 'wander'],
-    mixins: [
-        Game.EntityMixins.TaskActor,
-        Game.EntityMixins.Sight,
-        Game.EntityMixins.Attacker,
-        Game.EntityMixins.Destructible,
-        Game.EntityMixins.CorpseDropper,
-        Game.EntityMixins.ExperienceGainer,
-        Game.EntityMixins.RandomStatGainer
-    ]
-});
+export {
+    PlayerTemplate,
+    EntityRepository
+};

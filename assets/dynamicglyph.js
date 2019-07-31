@@ -1,3 +1,5 @@
+import Glyph from './glyph';
+
 class DynamicGlyph extends Glyph {
 
     constructor(properties={}) {
@@ -12,7 +14,7 @@ class DynamicGlyph extends Glyph {
         // Set up an object for listeners
         this._listeners = {};
         // Setup the object's mixins
-        var mixins = properties['mixins'] || [];
+        const mixins = properties['mixins'] || [];
         for (var i = 0; i < mixins.length; i++) {
             // Copy over all properties from each mixin as long
             // as it's not the name, init, or listeners property. We
@@ -76,7 +78,7 @@ class DynamicGlyph extends Glyph {
         var firstLetter = string.charAt(0).toLowerCase();
         // If word starts by a vowel, use an, else use a. Note that this is not perfect.
         var prefix = 'aeiou'.indexOf(firstLetter) >= 0 ? 1 : 0;
-    
+
         return prefixes[prefix] + ' ' + string;
     }
     describeThe(capitalize) {
@@ -115,3 +117,5 @@ class DynamicGlyph extends Glyph {
         return details.join(', ');
     }
 }
+
+export default DynamicGlyph;

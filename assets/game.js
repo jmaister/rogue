@@ -1,11 +1,25 @@
-var Game = {
-    _display: null,
-    _currentScreen: null,
-    _screenWidth: 80,
-    _screenHeight: 24,
 
-    init: function() {
-        this._display = new ROT.Display({
+import {Display} from 'rot-js';
+
+import {EntityRepository} from './entities';
+import {ItemRepository} from './items';
+
+import {StartScreen} from './screens';
+
+
+class Game {
+
+    constructor() {
+        this._display = null;
+        this._currentScreen = null,
+        this._screenWidth = 80;
+        this._screenHeight = 24;
+        this._entityRepository = new EntityRepository(this);
+        this._itemRepository = new ItemRepository(this);
+    }
+
+    init() {
+        this._display = new Display({
             width: this._screenWidth,
             height: this._screenHeight + 1
         });
@@ -27,19 +41,28 @@ var Game = {
         bindEventToScreen('keydown');
         //bindEventToScreen('keyup');
         bindEventToScreen('keypress');    
-    },
+    }
 
     getDisplay() {
         return this._display;
-    },
-    getScreenWidth: function() {
+    }
+    getScreenWidth() {
         return this._screenWidth;
-    },
-    getScreenHeight: function() {
+    }
+    getScreenHeight() {
         return this._screenHeight;
-    },
+    }
+    getEntityRepository() {
+        return this._entityRepository;
+    }
+    getItemRepository() {
+        return this._itemRepository;
+    }
+    getCurrentScreen() {
+        return this._currentScreen;
+    }
     
-    switchScreen: function(screen) {
+    switchScreen(screen) {
         // If we had a screen before, notify it that we exited
         if (this._currentScreen !== null) {
             this._currentScreen.exit();
@@ -53,9 +76,9 @@ var Game = {
             this._currentScreen.enter();
             this.refresh();
         }
-    },
+    }
     
-    refresh: function() {
+    refresh() {
         // Clear the screen
         this._display.clear();
         // Render the screen
@@ -64,50 +87,6 @@ var Game = {
 
 }
 
-Game.sendMessage = function(recipient, message, args) {
-    // Make sure the recipient can receive the message 
-    // before doing any work.
-    if (recipient.hasMixin(Game.EntityMixins.MessageRecipient)) {
-        // If args were passed, then we format the message, else
-        // no formatting is necessary
-        if (args) {
-            message = vsprintf(message, args);
-        }
-        recipient.receiveMessage(message);
-    }
-}
-
-Game.sendMessageNearby = function(map, centerX, centerY, centerZ, message, args) {
-    // If args were passed, then we format the message, else
-    // no formatting is necessary
-    if (args) {
-        message = vsprintf(message, args);
-    }
-    // Get the nearby entities
-    const entities = map.getEntitiesWithinRadius(centerX, centerY, centerZ, 5);
-    // Iterate through nearby entities, sending the message if
-    // they can receive it.
-    for (var i = 0; i < entities.length; i++) {
-        if (entities[i].hasMixin(Game.EntityMixins.MessageRecipient)) {
-            entities[i].receiveMessage(message);
-        }
-    }
-}
-
-Game.getNeighborPositions = function(x, y) {
-    var tiles = [];
-    // Generate all possible offsets
-    for (var dX = -1; dX < 2; dX ++) {
-        for (var dY = -1; dY < 2; dY++) {
-            // Make sure it isn't the same tile
-            if (dX == 0 && dY == 0) {
-                continue;
-            }
-            tiles.push({x: x + dX, y: y + dY});
-        }
-    }
-    return tiles.randomize();
-}
 
 Array.prototype.randomize = function randomize() {
     for (let i = this.length - 1; i > 0; i--) {
@@ -124,11 +103,12 @@ Array.prototype.random = function random() {
 
 window.onload = function() {
     // Initialize the game
-    Game.init();
+    const game = new Game();
+    game.init();
     // Add the container to our HTML page
-    document.body.appendChild(Game.getDisplay().getContainer());
+    document.body.appendChild(game.getDisplay().getContainer());
     // Load the start screen
-    Game.switchScreen(Game.Screen.startScreen);
+    game.switchScreen(new StartScreen(game));
 }
 
-
+export default Game;

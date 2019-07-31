@@ -1,6 +1,8 @@
 
+import DynamicGlyph from './dynamicglyph';
+
 class Item extends DynamicGlyph {
-    
+
     constructor(properties={}) {
         // Call the glyph's construtor with our set of properties
         super(properties);
@@ -23,3 +25,5 @@ class Item extends DynamicGlyph {
         return prefixes[prefix] + ' ' + string;
     }
 }
+
+export default Item;

@@ -1,4 +1,6 @@
 
+import Glyph from './glyph';
+
 class Tile extends Glyph {
     constructor(properties={}) {
         // Call the Glyph constructor with our properties
@@ -31,13 +33,27 @@ class Tile extends Glyph {
 Tile.nullTile = new Tile({description: '(unknown)'});
 Tile.floorTile = new Tile({
     character: '.',
+    foreground: function() {
+        return [
+            '#999999',
+            '#b3b3b3',
+            '#cccccc',
+        ].random();
+    },
     isWalkable: true,
     blocksLight: false,
     description: 'A cave floor'
 });
 Tile.wallTile = new Tile({
     character: '#',
-    foreground: 'goldenrod',
+    foreground: function() {
+        return [
+            '#856514',
+            '#daa520',
+            '#dea821',
+            '#e5ba4d'
+        ].random();
+    },
     isDiggable: true,
     diggable: true,
     description: 'A cave wall'
@@ -70,3 +86,5 @@ Tile.waterTile = new Tile({
     blocksLight: false,
     description: 'Murky blue water'
 });
+
+export default Tile;

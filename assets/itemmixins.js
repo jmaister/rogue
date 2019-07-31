@@ -1,7 +1,10 @@
-Game.ItemMixins = {};
+
+import Item from './item';
+
+const ItemMixins = {};
 
 // Edible mixins
-Game.ItemMixins.Edible = {
+ItemMixins.Edible = {
     name: 'Edible',
     init: function(template) {
         // Number of points to add to hunger
@@ -35,7 +38,7 @@ Game.ItemMixins.Edible = {
     }
 };
 
-Game.ItemMixins.Equippable = {
+ItemMixins.Equippable = {
     name: 'Equippable',
     init: function(template) {
         this._attackValue = template['attackValue'] || 0;
@@ -68,3 +71,5 @@ Game.ItemMixins.Equippable = {
         }
     }
 };
+
+export default ItemMixins;
