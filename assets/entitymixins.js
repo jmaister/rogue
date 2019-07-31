@@ -392,7 +392,7 @@ EntityMixins.CorpseDropper = {
             if (Math.round(Math.random() * 100) <= this._corpseDropRate) {
                 // Create a new corpse item and drop it.
                 this._map.addItem(this.getX(), this.getY(), this.getZ(),
-                    Game.ItemRepository.create('corpse', {
+                    this.getGame().getItemRepository().create('corpse', {
                         name: this._name + ' corpse',
                         foreground: this._foreground
                     }));
