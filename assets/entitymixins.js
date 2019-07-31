@@ -1,7 +1,13 @@
-// Create our Mixins namespace
-Game.EntityMixins = {};
 
-Game.EntityMixins.Destructible = {
+import {Path} from 'rot-js';
+
+import Game from './game';
+import Utilities from './utilities';
+
+// Create our Mixins namespace
+const EntityMixins = {};
+
+EntityMixins.Destructible = {
     name: 'Destructible',
     init: function(template) {
         this._maxHp = template['maxHp'] || 10;
@@ -26,7 +32,7 @@ Game.EntityMixins.Destructible = {
         value = value || 2;
         // Add to the defense value.
         this._defenseValue += value;
-        Game.sendMessage(this, "You look tougher!");
+        Utilities.sendMessage(this, "You look tougher!");
     },
     increaseMaxHp: function(value) {
         // If no value was passed, default to 10.
@@ -34,13 +40,13 @@ Game.EntityMixins.Destructible = {
         // Add to both max HP and HP.
         this._maxHp += value;
         this._hp += value;
-        Game.sendMessage(this, "You look healthier!");
+        Utilities.sendMessage(this, "You look healthier!");
     },
     getDefenseValue: function() {
         var modifier = 0;
         // If we can equip items, then have to take into 
         // consideration weapon and armor
-        if (this.hasMixin(Game.EntityMixins.Equipper)) {
+        if (this.hasMixin(EntityMixins.Equipper)) {
             if (this.getWeapon()) {
                 modifier += this.getWeapon().getDefenseValue();
             }
@@ -54,7 +60,7 @@ Game.EntityMixins.Destructible = {
         this._hp -= damage;
         // If have 0 or less HP, then remove ourseles from the map
         if (this._hp <= 0) {
-            Game.sendMessage(attacker, 'You kill the %s!', [this.getName()]);
+            Utilities.sendMessage(attacker, 'You kill the %s!', [this.getName()]);
             // Raise events
             this.raiseEvent('onDeath', attacker);
             attacker.raiseEvent('onKill', this);
@@ -75,7 +81,7 @@ Game.EntityMixins.Destructible = {
     }
 }
 
-Game.EntityMixins.Attacker = {
+EntityMixins.Attacker = {
     name: 'Attacker',
     groupName: 'Attacker',
     init: function(template) {
@@ -85,7 +91,7 @@ Game.EntityMixins.Attacker = {
         var modifier = 0;
         // If we can equip items, then have to take into 
         // consideration weapon and armor
-        if (this.hasMixin(Game.EntityMixins.Equipper)) {
+        if (this.hasMixin(EntityMixins.Equipper)) {
             if (this.getWeapon()) {
                 modifier += this.getWeapon().getAttackValue();
             }
@@ -100,7 +106,7 @@ Game.EntityMixins.Attacker = {
         value = value || 2;
         // Add to the attack value.
         this._attackValue += value;
-        Game.sendMessage(this, "You look stronger!");
+        Utilities.sendMessage(this, "You look stronger!");
     },
     attack: function(target) {
         // If the target is destructible, calculate the damage
@@ -111,9 +117,9 @@ Game.EntityMixins.Attacker = {
             var max = Math.max(0, attack - defense);
             var damage = 1 + Math.floor(Math.random() * max);
 
-            Game.sendMessage(this, 'You strike the %s for %d damage!', 
+            Utilities.sendMessage(this, 'You strike the %s for %d damage!', 
                 [target.getName(), damage]);
-            Game.sendMessage(target, 'The %s strikes you for %d damage!', 
+            Utilities.sendMessage(target, 'The %s strikes you for %d damage!', 
                 [this.getName(), damage]);
 
             target.takeDamage(this, damage);
@@ -127,7 +133,7 @@ Game.EntityMixins.Attacker = {
 }
 
 // Main player's actor mixin
-Game.EntityMixins.PlayerActor = {
+EntityMixins.PlayerActor = {
     name: 'PlayerActor',
     groupName: 'Actor',
     act: function() {
@@ -140,10 +146,10 @@ Game.EntityMixins.PlayerActor = {
         if (!this.isAlive()) {
             Game.Screen.playScreen.setGameEnded(true);
             // Send a last message to the player
-            Game.sendMessage(this, 'Press [Enter] to continue!');
+            Utilities.sendMessage(this, 'Press [Enter] to continue!');
         }
         // Re-render the screen
-        Game.refresh();
+        this.getGame().refresh();
         // Lock the engine and wait asynchronously
         // for the player to press a key.
         this.getMap().getEngine().lock();
@@ -154,10 +160,10 @@ Game.EntityMixins.PlayerActor = {
     }
 }
 
-Game.EntityMixins.FungusActor = {
+EntityMixins.FungusActor = {
     name: 'FungusActor',
     groupName: 'Actor',
-    init: function() {
+    init: function(template) {
         this._growthsRemaining = 5;
     },
     act: function() {
@@ -177,12 +183,12 @@ Game.EntityMixins.FungusActor = {
                     if (this.getMap().isEmptyFloor(this.getX() + xOffset,
                                                 this.getY() + yOffset,
                                                 this.getZ())) {
-                        var entity = Game.EntityRepository.create('fungus');
+                        var entity = this.getGame().getEntityRepository().create('fungus');
                         entity.setPosition(this.getX() + xOffset, this.getY() + yOffset,
                             this.getZ());
                         this.getMap().addEntity(entity);                        this._growthsRemaining--;
                         // Send a message nearby!
-                        Game.sendMessageNearby(this.getMap(),
+                        Utilities.sendMessageNearby(this.getMap(),
                             entity.getX(), entity.getY(), entity.getZ(),
                             'The fungus is spreading!');
                     }
@@ -192,7 +198,7 @@ Game.EntityMixins.FungusActor = {
     }
 }
 
-Game.EntityMixins.MessageRecipient = {
+EntityMixins.MessageRecipient = {
     name: 'MessageRecipient',
     init: function(template) {
         this._messages = [];
@@ -209,7 +215,7 @@ Game.EntityMixins.MessageRecipient = {
 }
 
 // This signifies our entity posseses a field of vision of a given radius.
-Game.EntityMixins.Sight = {
+EntityMixins.Sight = {
     name: 'Sight',
     groupName: 'Sight',
     init: function(template) {
@@ -223,7 +229,7 @@ Game.EntityMixins.Sight = {
         value = value || 1;
         // Add to sight radius.
         this._sightRadius += value;
-        Game.sendMessage(this, "You are more aware of your surroundings!");
+        Utilities.sendMessage(this, "You are more aware of your surroundings!");
     },
     canSee: function(entity) {
         // If not on the same map or on different floors, then exit early
@@ -256,7 +262,7 @@ Game.EntityMixins.Sight = {
     }
 }
 
-Game.EntityMixins.InventoryHolder = {
+EntityMixins.InventoryHolder = {
     name: 'InventoryHolder',
     init: function(template) {
         // Default to 10 inventory slots.
@@ -282,7 +288,7 @@ Game.EntityMixins.InventoryHolder = {
     },
     removeItem: function(i) {
         // If we can equip items, then make sure we unequip the item we are removing.
-        if (this._items[i] && this.hasMixin(Game.EntityMixins.Equipper)) {
+        if (this._items[i] && this.hasMixin(EntityMixins.Equipper)) {
             this.unequip(this._items[i]);
         }
         // Simply clear the inventory slot.
@@ -331,7 +337,7 @@ Game.EntityMixins.InventoryHolder = {
     }
 };
 
-Game.EntityMixins.FoodConsumer = {
+EntityMixins.FoodConsumer = {
     name: 'FoodConsumer',
     init: function(template) {
         this._maxFullness = template['maxFullness'] || 1000;
@@ -361,11 +367,11 @@ Game.EntityMixins.FoodConsumer = {
         // 25% of max fullness or less = hungry
         } else if (this._fullness <= perPercent * 25) {
             return 'Hungry';
-        // 95% of max fullness or more = oversatiated
-        } else if (this._fullness >= perPercent * 95) {
-            return 'Oversatiated';
-        // 75% of max fullness or more = full
+        // 75% of max fullness or more = oversatiated
         } else if (this._fullness >= perPercent * 75) {
+            return 'Oversatiated';
+        // 95% of max fullness or more = full
+        } else if (this._fullness >= perPercent * 95) {
             return 'Full';
         // Anything else = not hungry
         } else {
@@ -374,7 +380,7 @@ Game.EntityMixins.FoodConsumer = {
     }
 };
 
-Game.EntityMixins.CorpseDropper = {
+EntityMixins.CorpseDropper = {
     name: 'CorpseDropper',
     init: function(template) {
         // Chance of dropping a cropse (out of 100).
@@ -395,7 +401,7 @@ Game.EntityMixins.CorpseDropper = {
     }
 };
 
-Game.EntityMixins.Equipper = {
+EntityMixins.Equipper = {
     name: 'Equipper',
     init: function(template) {
         this._weapon = null;
@@ -430,7 +436,7 @@ Game.EntityMixins.Equipper = {
     }
 };
 
-Game.EntityMixins.TaskActor = {
+EntityMixins.TaskActor = {
     name: 'TaskActor',
     groupName: 'Actor',
     init: function(template) {
@@ -472,7 +478,7 @@ Game.EntityMixins.TaskActor = {
         // Generate the path and move to the first tile.
         var source = this;
         var z = source.getZ();
-        var path = new ROT.Path.AStar(player.getX(), player.getY(), function(x, y) {
+        var path = new Path.AStar(player.getX(), player.getY(), function(x, y) {
             // If an entity is present at the tile, can't move there.
             var entity = source.getMap().getEntityAt(x, y, z);
             if (entity && entity !== player && entity !== source) {
@@ -502,7 +508,7 @@ Game.EntityMixins.TaskActor = {
     }
 };
 
-Game.EntityMixins.ExperienceGainer = {
+EntityMixins.ExperienceGainer = {
     name: 'ExperienceGainer',
     init: function(template) {
         this._level = template['level'] || 1;
@@ -564,7 +570,7 @@ Game.EntityMixins.ExperienceGainer = {
         }
         // Check if we gained at least one level.
         if (levelsGained > 0) {
-            Game.sendMessage(this, "You advance to level %d.", [this._level]);
+            Utilities.sendMessage(this, "You advance to level %d.", [this._level]);
             this.raiseEvent('onGainLevel');
         }
     },
@@ -589,7 +595,7 @@ Game.EntityMixins.ExperienceGainer = {
     }
 };
 
-Game.EntityMixins.RandomStatGainer = {
+EntityMixins.RandomStatGainer = {
     name: 'RandomStatGainer',
     groupName: 'StatGainer',
     listeners: {
@@ -606,7 +612,7 @@ Game.EntityMixins.RandomStatGainer = {
     }
 };
 
-Game.EntityMixins.PlayerStatGainer = {
+EntityMixins.PlayerStatGainer = {
     name: 'PlayerStatGainer',
     groupName: 'StatGainer',
     listeners: {
@@ -618,10 +624,11 @@ Game.EntityMixins.PlayerStatGainer = {
     }
 };
 
-Game.EntityMixins.GiantZombieActor = Game.extend(Game.EntityMixins.TaskActor, {
+// TODO: change extend for Object.assign
+EntityMixins.GiantZombieActor = Utilities.extend(EntityMixins.TaskActor, {
     init: function(template) {
         // Call the task actor init with the right tasks.
-        Game.EntityMixins.TaskActor.init.call(this, Game.extend(template, {
+        EntityMixins.TaskActor.init.call(this, Utilities.extend(template, {
             'tasks' : ['growArm', 'spawnSlime', 'hunt', 'wander']
         }));
         // We only want to grow the arm once.
@@ -636,14 +643,14 @@ Game.EntityMixins.GiantZombieActor = Game.extend(Game.EntityMixins.TaskActor, {
             return Math.round(Math.random() * 100) <= 10;
         // Call parent canDoTask
         } else {
-            return Game.EntityMixins.TaskActor.canDoTask.call(this, task);
+            return EntityMixins.TaskActor.canDoTask.call(this, task);
         }
     },
     growArm: function() {
         this._hasGrownArm = true;
         this.increaseAttackValue(5);
         // Send a message saying the zombie grew an arm.
-        Game.sendMessageNearby(this.getMap(),
+        Utilities.sendMessageNearby(this.getMap(),
             this.getX(), this.getY(), this.getZ(),
             'An extra arm appears on the giant zombie!');
     },
@@ -659,7 +666,7 @@ Game.EntityMixins.GiantZombieActor = Game.extend(Game.EntityMixins.TaskActor, {
             return;
         }
         // Create the entity
-        var slime = Game.EntityRepository.create('slime');
+        var slime = this.getGame().getEntityRepository().create('slime');
         slime.setX(this.getX() + xOffset);
         slime.setY(this.getY() + yOffset)
         slime.setZ(this.getZ());
@@ -672,3 +679,5 @@ Game.EntityMixins.GiantZombieActor = Game.extend(Game.EntityMixins.TaskActor, {
         }
     }
 });
+
+export default EntityMixins;

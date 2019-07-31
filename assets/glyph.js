@@ -14,7 +14,10 @@ class Glyph {
     getBackground() {
         return this._background;
     }
-    getForeground() { 
+    getForeground() {
+        if (typeof this._foreground === 'function') {
+            return this._foreground();
+        }
         return this._foreground; 
     }
 
@@ -23,3 +26,5 @@ class Glyph {
             '%c{white}%b{black}';
     }
 }
+
+export default Glyph;

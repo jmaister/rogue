@@ -1,10 +1,13 @@
+import Map from '../map';
+
+import {EntityRepository} from '../entities';
 
 class BossCavern extends Map {
     constructor() {
         // Call the Map constructor
         super(this._generateTiles(80, 24));
         // Create the giant zombie
-        this.addEntityAtRandomPosition(Game.EntityRepository.create('giant zombie'), 0);
+        this.addEntityAtRandomPosition(EntityRepository.create('giant zombie'), 0);
     }
 
     addEntity(entity) {
@@ -82,3 +85,5 @@ class BossCavern extends Map {
         return [tiles];
     }
 }
+
+export default BossCavern;

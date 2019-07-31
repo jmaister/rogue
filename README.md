@@ -38,3 +38,11 @@ https://github.com/munificent/hauberk
 
 A JavaScript character-based tile engine for creating games such as roguelikes. http://tapio.github.com/unicodetiles.js/
 https://github.com/tapio/unicodetiles.js
+
+# Release notes
+
+## 1.0.0
+
+* Finished course
+* Some files fixed with ES6 classes
+

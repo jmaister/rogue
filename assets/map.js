@@ -1,6 +1,12 @@
+import {Scheduler, Engine, FOV} from 'rot-js';
+
+import Tile from './tile';
+
+import EntityMixins from './entitymixins';
+
 class Map {
 
-    constructor(tiles, player) {
+    constructor(tiles) {
         this._tiles = tiles;
         // Cache dimensions
         this._depth = tiles.length
@@ -14,8 +20,8 @@ class Map {
         // Create a table which will hold the items
         this._items = {};
         // Create the engine and scheduler
-        this._scheduler = new ROT.Scheduler.Speed();
-        this._engine = new ROT.Engine(this._scheduler);
+        this._scheduler = new Scheduler.Speed();
+        this._engine = new Engine(this._scheduler);
         // Setup the explored array
         this._explored = new Array(this._depth);
         this._setupExploredArray();
@@ -105,7 +111,7 @@ class Map {
             this._scheduler.add(entity, true);
         }
         // If the entity is the player, set the player.
-        if (entity.hasMixin(Game.EntityMixins.PlayerActor)) {
+        if (entity.hasMixin(EntityMixins.PlayerActor)) {
             this._player = entity;
         }
     }
@@ -121,7 +127,7 @@ class Map {
             this._scheduler.remove(entity);
         }
         // If the entity is the player, update the player field.
-        if (entity.hasMixin(Game.EntityMixins.PlayerActor)) {
+        if (entity.hasMixin(EntityMixins.PlayerActor)) {
             this._player = undefined;
         }
     }    
@@ -151,8 +157,9 @@ class Map {
                 // For each depth, we need to create a callback which figures out
                 // if light can pass through a given tile.
                 var depth = z;
+                // DiscreteShadowcasting
                 map._fov.push(
-                    new ROT.FOV.DiscreteShadowcasting(function(x, y) {
+                    new FOV.RecursiveShadowcasting(function(x, y) {
                         return !map.getTile(x, y, depth).isBlockingLight();
                     }, {topology: 4}));
             })();
@@ -246,3 +253,5 @@ class Map {
         this.addItem(position.x, position.y, position.z, item);
     }    
 }
+
+export default Map;

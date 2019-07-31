@@ -1,5 +1,6 @@
 
 class Repository {
+
     constructor(name, ctor) {
         this._name = name;
         this._templates = {};
@@ -38,3 +39,5 @@ class Repository {
         return this.create(Object.keys(this._randomTemplates).random());
     }    
 }
+
+export default Repository;

@@ -1,3 +1,7 @@
+import { Map } from 'rot-js';
+
+import Tile from './tile';
+import Utilities from './utilities';
 
 class Builder {
     constructor(width, height, depth) {
@@ -47,7 +51,7 @@ class Builder {
             map[w] = new Array(this._height);
         }
         // Setup the cave generator
-        var generator = new ROT.Map.Cellular(this._width, this._height);
+        var generator = new Map.Cellular(this._width, this._height);
         generator.randomize(0.5);
         var totalIterations = 3;
         // Iteratively smoothen the map
@@ -90,7 +94,7 @@ class Builder {
         while (tiles.length > 0) {
             tile = tiles.pop();
             // Get the neighbors of the tile
-            neighbors = Game.getNeighborPositions(tile.x, tile.y);
+            neighbors = Utilities.getNeighborPositions(tile.x, tile.y);
             // Iterate through each neighbor, checking if we can use it to fill
             // and if so updating the region and adding it to our processing
             // list.
@@ -214,3 +218,5 @@ class Builder {
         }
     }
 }
+
+export default Builder;

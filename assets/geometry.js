@@ -1,5 +1,6 @@
-Game.Geometry = {
-    getLine: function(startX, startY, endX, endY) {
+class Geometry {
+
+    static getLine(startX, startY, endX, endY) {
         var points = [];
         var dx = Math.abs(endX - startX);
         var dy = Math.abs(endY - startY);
@@ -26,4 +27,6 @@ Game.Geometry = {
 
         return points;
     }
-};
+}
+
+export default Geometry;
