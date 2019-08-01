@@ -131,9 +131,13 @@ class PlayScreen extends Screen {
 
         // Render player stats
         var stats = '%c{white}%b{black}';
-        stats += vsprintf('HP: %d/%d L: %d XP: %d', 
-            [this._player.getHp(), this._player.getMaxHp(),
-             this._player.getLevel(), this._player.getExperience()]);
+        stats += vsprintf('HP: %d/%d L: %d XP: %d/%d', [
+            this._player.getHp(),
+            this._player.getMaxHp(),
+            this._player.getLevel(),
+            this._player.getExperience(),
+            this._player.getNextLevelExperience()
+        ]);
         display.drawText(0, screenHeight, stats);
         // Render hunger state
         var hungerState = this._player.getHungerState();
