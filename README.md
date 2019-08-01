@@ -1,5 +1,8 @@
 
 
+# Setup
+
+    $ npm install
 
 # Run
 
