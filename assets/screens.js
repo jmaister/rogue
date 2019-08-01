@@ -233,90 +233,82 @@ class PlayScreen extends Screen {
             return;
         }
         if (inputType === 'keydown') {
-            // If enter is pressed, go to the win screen
-            // If escape is pressed, go to lose screen
-            if (inputData.keyCode === KEYS.VK_RETURN) {
-                this.getGame().switchScreen(new WinScreen(this.getGame()));
-            } else if (inputData.keyCode === KEYS.VK_ESCAPE) {
-                this.getGame().switchScreen(new LoseScreen(this.getGame()));
-            } else {
-                // Movement
-                if (inputData.keyCode === KEYS.VK_LEFT) {
-                    this.move(-1, 0, 0);
-                } else if (inputData.keyCode === KEYS.VK_RIGHT) {
-                    this.move(1, 0, 0);
-                } else if (inputData.keyCode === KEYS.VK_UP) {
-                    this.move(0, -1, 0);
-                } else if (inputData.keyCode === KEYS.VK_DOWN) {
-                    this.move(0, 1, 0);
-                } else if (inputData.keyCode === KEYS.VK_I) {
-                    if (this._player.getItems().filter(function(x){return x;}).length === 0) {
-                        // If the player has no items, send a message and don't take a turn
-                        Utilities.sendMessage(this._player, "You are not carrying anything!");
-                        this.getGame().refresh();
-                    } else {
-                        // Show the inventory
-                        GameScreens.inventoryScreen.setup(this._game, this._player, this._player.getItems());
-                        this.setSubScreen(GameScreens.inventoryScreen);
-                    }
-                    return;
-                } else if (inputData.keyCode === KEYS.VK_D) {
-                    if (this._player.getItems().filter(function(x){return x;}).length === 0) {
-                        // If the player has no items, send a message and don't take a turn
-                        Utilities.sendMessage(this._player, "You have nothing to drop!");
-                        this.getGame().refresh();
-                    } else {
-                        // Show the drop screen
-                        GameScreens.dropScreen.setup(this._game, this._player, this._player.getItems());
-                        this.setSubScreen(GameScreens.dropScreen);
-                    }
-                    return;
-                } else if (inputData.keyCode === KEYS.VK_E) {
-                    // Show the eat screen
-                    if (GameScreens.eatScreen.setup(this._game, this._player, this._player.getItems())) {
-                        this.setSubScreen(GameScreens.eatScreen);
-                    } else {
-                        Utilities.sendMessage(this._player, "You have nothing to eat!");
-                        this.getGame().refresh();
-                    }
-                    return;
-                } else if (inputData.keyCode === KEYS.VK_W) {
-                    if (inputData.shiftKey) {
-                        // Show the wear screen
-                        this.showItemsSubScreen(GameScreens.wearScreen, this._player.getItems(),
-                            'You have nothing to wear.');
-                    } else {
-                        // Show the wield screen
-                        this.showItemsSubScreen(GameScreens.wieldScreen, this._player.getItems(),
-                            'You have nothing to wield.');
-                    }
-                    return;
-                } else if (inputData.keyCode === KEYS.VK_X) {
-                    // Show the drop screen
-                    this.showItemsSubScreen(GameScreens.examineScreen, this._player.getItems(),
-                       'You have nothing to examine.');
-                    return;
-                } else if (inputData.keyCode === KEYS.VK_COMMA) {
-                    var items = this._player.getMap().getItemsAt(this._player.getX(), this._player.getY(), this._player.getZ());
-                    // If there is only one item, directly pick it up
-                    if (items && items.length === 1) {
-                        var item = items[0];
-                        if (this._player.pickupItems([0])) {
-                            Utilities.sendMessage(this._player, "You pick up %s.", [item.describeA()]);
-                        } else {
-                            Utilities.sendMessage(this._player, "Your inventory is full! Nothing was picked up.");
-                        }
-                    } else {
-                        this.showItemsSubScreen(GameScreens.pickupScreen, items,
-                            'There is nothing here to pick up.');
-                    } 
+            // Movement
+            if (inputData.keyCode === KEYS.VK_LEFT) {
+                this.move(-1, 0, 0);
+            } else if (inputData.keyCode === KEYS.VK_RIGHT) {
+                this.move(1, 0, 0);
+            } else if (inputData.keyCode === KEYS.VK_UP) {
+                this.move(0, -1, 0);
+            } else if (inputData.keyCode === KEYS.VK_DOWN) {
+                this.move(0, 1, 0);
+            } else if (inputData.keyCode === KEYS.VK_I) {
+                if (this._player.getItems().filter(function(x){return x;}).length === 0) {
+                    // If the player has no items, send a message and don't take a turn
+                    Utilities.sendMessage(this._player, "You are not carrying anything!");
+                    this.getGame().refresh();
                 } else {
-                    // Not a valid key
-                    return;
+                    // Show the inventory
+                    GameScreens.inventoryScreen.setup(this._game, this._player, this._player.getItems());
+                    this.setSubScreen(GameScreens.inventoryScreen);
                 }
-                // Unlock the engine
-                this._player.getMap().getEngine().unlock();
+                return;
+            } else if (inputData.keyCode === KEYS.VK_D) {
+                if (this._player.getItems().filter(function(x){return x;}).length === 0) {
+                    // If the player has no items, send a message and don't take a turn
+                    Utilities.sendMessage(this._player, "You have nothing to drop!");
+                    this.getGame().refresh();
+                } else {
+                    // Show the drop screen
+                    GameScreens.dropScreen.setup(this._game, this._player, this._player.getItems());
+                    this.setSubScreen(GameScreens.dropScreen);
+                }
+                return;
+            } else if (inputData.keyCode === KEYS.VK_E) {
+                // Show the eat screen
+                if (GameScreens.eatScreen.setup(this._game, this._player, this._player.getItems())) {
+                    this.setSubScreen(GameScreens.eatScreen);
+                } else {
+                    Utilities.sendMessage(this._player, "You have nothing to eat!");
+                    this.getGame().refresh();
+                }
+                return;
+            } else if (inputData.keyCode === KEYS.VK_W) {
+                if (inputData.shiftKey) {
+                    // Show the wear screen
+                    this.showItemsSubScreen(GameScreens.wearScreen, this._player.getItems(),
+                        'You have nothing to wear.');
+                } else {
+                    // Show the wield screen
+                    this.showItemsSubScreen(GameScreens.wieldScreen, this._player.getItems(),
+                        'You have nothing to wield.');
+                }
+                return;
+            } else if (inputData.keyCode === KEYS.VK_X) {
+                // Show the drop screen
+                this.showItemsSubScreen(GameScreens.examineScreen, this._player.getItems(),
+                    'You have nothing to examine.');
+                return;
+            } else if (inputData.keyCode === KEYS.VK_COMMA) {
+                var items = this._player.getMap().getItemsAt(this._player.getX(), this._player.getY(), this._player.getZ());
+                // If there is only one item, directly pick it up
+                if (items && items.length === 1) {
+                    var item = items[0];
+                    if (this._player.pickupItems([0])) {
+                        Utilities.sendMessage(this._player, "You pick up %s.", [item.describeA()]);
+                    } else {
+                        Utilities.sendMessage(this._player, "Your inventory is full! Nothing was picked up.");
+                    }
+                } else {
+                    this.showItemsSubScreen(GameScreens.pickupScreen, items,
+                        'There is nothing here to pick up.');
+                }
+            } else {
+                // Not a valid key
+                return;
             }
+            // Unlock the engine
+            this._player.getMap().getEngine().unlock();
         } else if (inputType === 'keypress') {
             var keyChar = String.fromCharCode(inputData.charCode);
             if (keyChar === '>') {
@@ -333,6 +325,7 @@ class PlayScreen extends Screen {
                 return;
             } else if (keyChar === '?') {
                 // Setup the look screen.
+                GameScreens.helpScreen.setup(this._game);
                 this.setSubScreen(GameScreens.helpScreen);
                 return;
             } else {
@@ -848,12 +841,15 @@ GameScreens.lookScreen = new TargetBasedScreen({
 
 // Define our help screen
 GameScreens.helpScreen = {
+    setup: function(game) {
+        this._game = game;
+    },
     render: function(display) {
         var text = 'jsrogue help';
         var border = '-------------';
         var y = 0;
-        display.drawText(this.getGame().getScreenWidth() / 2 - text.length / 2, y++, text);
-        display.drawText(this.getGame().getScreenWidth() / 2 - text.length / 2, y++, border);
+        display.drawText(this._game.getScreenWidth() / 2 - text.length / 2, y++, text);
+        display.drawText(this._game.getScreenWidth() / 2 - text.length / 2, y++, border);
         display.drawText(0, y++, 'The villagers have been complaining of a terrible stench coming from the cave.');
         display.drawText(0, y++, 'Find the source of this smell and get rid of it!');
         y += 3;
@@ -867,7 +863,7 @@ GameScreens.helpScreen = {
         display.drawText(0, y++, '[?] to show this help screen');
         y += 3;
         text = '--- press any key to continue ---';
-        display.drawText(this.getGame().getScreenWidth() / 2 - text.length / 2, y++, text);
+        display.drawText(this._game.getScreenWidth() / 2 - text.length / 2, y++, text);
     },
     handleInput: function(inputType, inputData) {
         this._game.getCurrentScreen().setSubScreen(null);
