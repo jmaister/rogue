@@ -1,11 +1,15 @@
 
-import {Display} from 'rot-js';
+import {Display, KEYS} from 'rot-js';
 
 import {EntityRepository} from './entities';
 import {ItemRepository} from './items';
 
 import {StartScreen} from './screens';
 
+import '../styles/main.css';
+
+// TODO: fix dependency
+import CanvasGamepad from '../../canvas-gamepad/canvas-gamepad';
 
 class Game {
 
@@ -16,13 +20,15 @@ class Game {
         this._screenHeight = 24;
         this._entityRepository = new EntityRepository(this);
         this._itemRepository = new ItemRepository(this);
+        this._displayOptions = {
+            width: this._screenWidth,
+            height: this._screenHeight + 1,
+            fontSize: 20
+        };
     }
 
     init() {
-        this._display = new Display({
-            width: this._screenWidth,
-            height: this._screenHeight + 1
-        });
+        this._display = new Display(this._displayOptions);
 
         // Create a helper function for binding to an event
         // and making it send it to the screen
@@ -40,7 +46,8 @@ class Game {
         // Bind keyboard input events
         bindEventToScreen('keydown');
         //bindEventToScreen('keyup');
-        bindEventToScreen('keypress');    
+        bindEventToScreen('keypress');
+
     }
 
     getDisplay() {
@@ -105,10 +112,51 @@ window.onload = function() {
     // Initialize the game
     const game = new Game();
     game.init();
+
+    const canvas = game.getDisplay().getContainer();
+    canvas.id = "gamecanvas";
+
     // Add the container to our HTML page
-    document.body.appendChild(game.getDisplay().getContainer());
+    const canvasContainer = document.getElementById('canvascontainer');
+    canvasContainer.insertBefore(canvas, canvasContainer.firstChild);
+
     // Load the start screen
     game.switchScreen(new StartScreen(game));
+
+    document.getElementById('fullscreen').addEventListener('click', e => {
+        canvas.requestFullscreen();
+    });
+
+    // Gamepad configuration
+    const gamepadCanvas = document.getElementById('gamepad');
+    gamepadCanvas.width = canvas.width;
+    gamepadCanvas.height = canvas.height;
+    const gamepad = new CanvasGamepad({
+        canvasId: 'gamepad'
+    });
+    // Translate from gamepad event to game event
+    gamepad.addEventListener((eventData, event) => {
+        console.log("eventData", eventData);
+        let keyCode = null;
+
+        if (eventData.up) {
+            keyCode = KEYS.VK_UP;
+        } else if (eventData.down) {
+            keyCode = KEYS.VK_DOWN;
+        } else if (eventData.left) {
+            keyCode = KEYS.VK_LEFT;
+        } else if (eventData.right) {
+            keyCode = KEYS.VK_RIGHT;
+        }
+
+        if (keyCode !== null) {
+            const inputData = {
+                keyCode: keyCode
+            };
+            game.getCurrentScreen().handleInput('keydown', inputData);
+        }
+    });
+
 }
 
 export default Game;

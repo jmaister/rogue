@@ -1,0 +1,17 @@
+html, body {
+    margin: 0px;
+}
+
+#canvascontainer {
+    position: relative;
+}
+
+#canvascontainer canvas {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+#gamepad {
+    z-index: 1;
+}
