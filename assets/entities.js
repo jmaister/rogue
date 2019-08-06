@@ -10,7 +10,7 @@ const PlayerTemplate = {
     background: 'black',
     maxHp: 40,
     attackValue: 10,
-    sightRadius: 6,
+    sightRadius: 15,
     inventorySlots: 22,
     mixins: [
         EntityMixins.PlayerActor,
